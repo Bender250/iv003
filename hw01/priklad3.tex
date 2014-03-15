@@ -34,7 +34,7 @@
 
 %%% ZDE SADA, UKOL CISLO X, JMENO, UCO
 \setexercise{1}
-\setassignment{2}
+\setassignment{3}
 \setstudenta{Karel Kubíček}
 \setucoa{408351}
 \setstudentb{Henrich Lauko}
@@ -42,10 +42,29 @@
 
 
 \begin{document}
-
+Datovou strukturou, která splňuje podmínky stanovené zadáním je B+ strom se stupněm 4. Navíc oproti normálnímu B+ stromu podle zadání do uzlů přidáme hodnotu \textit{small[x]}.
 \begin{enumerate}
-	\item \textsc{Minimum}
-	\item \textsc{Insert}($k$)
+	\item \textsc{Minimum} hledáme vždy v nelevějším podstromu. Rekurzivně se tedy volá minimum na nejlevější podstrom, dokud se nedosáhne úrovně listů, kde nejlevější potomek je minimum našeho stromu.\\
+	\begin{procedure}[H]
+	\SetKwFunction{ffminimum}{minimum}
+		\caption{minimum($T$) }
+		\Input{B+ strom $T$, ve kterém máme minimum hledat}
+		\Output{ukazatel na minimim}
+		\uIf{$T$ je list} {
+			\Return{$T$} \tcp{nalezeno minimum, vracím ukazatel}
+		}
+		\uElse {
+			\Return{\ffminimum($T.firstSubTree$)} \tcp{firstSubTree je nejlevější podstrom}
+		}
+	\end{procedure}
+	\item \textsc{Insert}($k$) se skládá ze 2 částí. První částí je nalezení správného místa, na které prvek patří a zařazení na toto místo, druhou fází je v případě překročení limitu 4 potomci na strom rozdělení uzlu s 5 potomky na 2 uzly, jeden se dvěma, druhý se třema potomky a vypropagování kontroly velkého počtu potomků o úroveň výše.\\
+	\begin{procedure}[H]
+	\SetKwFunction{ffinsert}{insert}
+		\caption{insert($T, k$) }
+		\Input{B+ strom $T$, do kterého máme přidat klíč $k$}
+		\Output{}
+		\tcp{TODO}
+	\end{procedure}
 	\item \textsc{Decrease Key}($x,k$)
 	\item \textsc{Delete}($x$)
 	\item \textsc{Extract Min}
