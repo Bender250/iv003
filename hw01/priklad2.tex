@@ -1,0 +1,129 @@
+\documentclass[12pt]{iv003}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage[czech]{babel}
+\usepackage{amsmath, amsthm}
+\usepackage{enumerate}
+
+%% algoritmy
+%{{{ Latex definitions
+% ALGORITHM typesetting
+\usepackage[noline,boxruled,longend,linesnumbered,czech]{algorithm2e}
+%\SetKwInOut{Input}{vstup}\SetKwInOut{Output}{výstup}
+\SetKwInput{Input}{vstup}
+\SetKwInput{Output}{výstup}
+\newcommand{\donothing}[1]{#1}
+\SetArgSty{donothing}
+\SetCommentSty{emph}
+%\IncMargin{1em}
+%\setlength{\algomargin}{1em}
+\DontPrintSemicolon
+\SetKwIF{If}{ElseIf}{Else}{if}{then}{else if}{else}{fi}
+\SetKwFor{For}{for}{do}{od}
+\SetKwFor{While}{while}{do}{od}
+
+% hack to set the correct width of the algorithm
+\usepackage{xpatch}
+\xpretocmd{\algorithm}{\hsize=\linewidth}{}{}
+\xpretocmd{\function}{\hsize=\linewidth}{}{}
+\xpretocmd{\procedure}{\hsize=\linewidth}{}{}
+%%/algoritmy
+
+%%% ZDE SADA, UKOL CISLO X, JMENO, UCO
+\setexercise{1}
+\setassignment{2}
+\setstudenta{Karel Kubíček}
+\setucoa{408351}
+\setstudentb{Henrich Lauko}
+\setucob{410438}
+
+
+\begin{document}
+\begin{small}
+\begin{procedure}[H]
+\SetKwFunction{fffindEso}{findEso}
+    \caption{findEso($A, fromX, toX, fromY, toY$) }
+    \Input{čtvercová matice $A$ vymezená v intervalu $x \in <fromX, toX>, y \in <fromY, toY>$}
+    \Output{souřadnice esa v matici, tedy prvek, který je větší, než jeho sousedé}
+    \If{$toX = fromX$}{
+		\Return{$fromX, fromY$} \tcp{nalezeno eso, vracím souřadnice}
+    }
+    $halfX \leftarrow (toX - fromX)/2$ \;
+    $halfY \leftarrow (toY - fromY)/2$ \;
+    \tcp{maxX a maxY jsou souřadnice maxima z prvků kolem horizontálního a vertikálního středu}
+    $maxX \leftarrow halfX$ \tcp{pro hledání maxima začnu nastavením souřadnic na 1. prvek}
+    $maxY \leftarrow fromY$ \;
+    \For{$x \leftarrow fromX$ \KwTo $toX$}{
+		\If{$A[maxX][maxY] < A[x][halfY]$}{
+			$maxX \leftarrow x$ \tcp{zde procházím sloupec vlevo od středu}
+			$maxY \leftarrow halfY$ \;
+		}
+		\If{$A[maxX][maxY] < A[x][halfY+1]$}{
+			$maxX \leftarrow x$ \tcp{zde procházím sloupec vpravo od středu}
+			$maxY \leftarrow halfY+1$ \;
+		}
+    }
+    \For{$y \leftarrow fromY$ \KwTo $toY$}{
+		\If{$A[maxX][maxY] < A[halfX][y]$}{
+			$maxX \leftarrow halfX$ \tcp{zde procházím řádek vlevo od středu}
+			$maxY \leftarrow y$ \;
+		}
+		\If{$A[maxX][maxY] < A[halfX+1][y]$}{
+			$maxX \leftarrow halfX+1$ \tcp{zde procházím řádek vpravo od středu}
+			$maxY \leftarrow y$ \;
+		}
+    }
+    \uIf{maxX <= halfX} {
+		\uIf{maxY <= halfY} {
+			\Return{\fffindEso($A, fromX, halfX, fromY, halfY$)} 
+		}
+		\uElse {
+			\Return{\fffindEso($A, fromX, halfX, halfY+1, toY$)} 
+		}
+    }
+    \uElse {
+		\uIf{maxY <= halfY} {
+			\Return{\fffindEso($A, halfX+1, toX, fromY, halfY$)} 
+		}
+		\uElse {
+			\Return{\fffindEso($A, halfX+1, toX, halfY+1, toY$)} 
+		}
+    }
+\end{procedure}
+\end{small}
+\paragraph{Pojmy:} abych příliš často nemusel formálně popisovat množinu prvků matice, která se skládá z prvků ve sloupcích odpovídajících $halfX$ a $halfX+1$ v rozsahu $y \in <fromY, toY>$ a řádkům odpovídajících $halfY$ a $halfY+1$ v rozsahu $x \in <fromX, toX>$, tak pro tuto množinu prvků zavádím pojem \textit{středový~kříž}.
+\paragraph{Popis algoritmu:} tento rekurzivní algoritmus je založen na tom, že se po každém průchodu změnší část matice, se kterou pracuje na čtvrtinu. Volbou maxima ze středového kříže se rozhoduje, kterou ze 4 možných čtvrtin má vybrat. Nalezení maxima zaručuje, že v dané čtvrtině maximum musí být (formálně rozebráno níže), rekurzivně se tedy algoritmus zanoří do dané čtvrtiny. Eso tedy nemusí být maximum z prvního výběru. Algoritmus by šel upravit, aby místo dělení na čtvrtiny dělil matici na poloviny, střídavě horizontálně a vertikálně, díky čemuž by měl trochu menší složitost (asymptotická složitost by však stále byla $\mathcal{O}(n)$), cenou by však byl mnohem složitější zápis.
+\paragraph{Korektnost:} algoritmus je totálně korektní, pokud skončí a výstup splňuje výstupní podmínku, kterou je v našem případě, že nalezený prvek je eso. Konečnost je zřejmá, jelikož rozměry matice $n$ po každém kroce klesnou minimálně na $\lceil \frac{n}{2} \rceil$, přičemž pro $n = 1$ (k čemuž algoritmus konverguje) algoritmus skončí.\\
+Abychom mohli dokázat, že je algoritmus parciálně korektní, je nutno dokázat invariant: v každém rekurzivním volání existuje v daném intervalu matice alespoň 1 eso.\\
+Již ze zadání vyplívá, že při prvním volání s celou vstupní maticí musí invariant platit. To je zaručeno unikátností všech prvků.\\
+Předpokládejme platnost invariantu pro $m$-té rekurzivní volání. 
+%%Bez újmy na obecnosti si můžeme říct, že algoritmus bude pracovat se submaticí v levém horním rohu.\\
+V $m+1$-ním rekurzivním volání z předchozího tvrzení víme, že v aktuální submatici se nachází eso. %%Nyní si situaci můžeme rozdělit na 2 možnosti.\\
+%%1. maximum z minulého rekurzivního volání je jediným esem v aktuální submatici. Pak od tohoto esa musí existovat klesající posloupnost čísel (nemusí být jen jedna), která vede k maximu ze středového kříže aktuální submatice. Jediným prvkem této posloupnosti, který se nachází na středovém kříži může být naše nalezené maximum. Tato posloupnost se tedy nachází v pouze jedné čtvrtině z aktuální submatice, tato čtvrtina odpovídá čtvrtině, v níž se nachází nalezené maximum a zároveň se jedná o čtvrtinu, ve které se nachází eso. Po dalším rekurzivním volání se tedy invariant nemění.
+%%2. Es je více, nebo dané jediné eso není maximem z původního rekurzivního volání.
+Pak platí, že od maxima ze středového kříže vede rostoucí posloupnost k esu a jediným prvkem této posloupnosti, který se nachází na střeodvém kříži, je právě nalezené maximum. Pokud by toto tvrzení neplatilo a posloupnost by měla další prvky ležící na středovém kříži, pak by díky tranzitivitě relace \textit{větší než} musel být daný jiný prvek posloupnosti ležící na kříži větší než nalezené maximum a tím pádem by měl být sám maximem.
+\paragraph{Asymptotická časová složitost} algoritmu je $\Theta(n)$. To lze odvodit z rekurentní rovnice, která popisuje složitost každého volání rekurze a vypadá takto:\\
+$$T(n) = T(\lceil \frac{n}{2} \rceil) + \mathcal{O}(n)$$
+$$T(1) = 1$$
+Tato rovnice říká, že při každém rekurzivním volání se šířka matice zmenšuje na polovinu (zaokrouhleno nahoru), a před tím se provede $4n$ porovnání při hledání maxima ve středovém kříži. Dalších operací je konstantní počet, takže platí, že $4n + k \in \mathcal{O}(n)$.
+Horní hranici získáme pomocí master theoremu, přičemž naše rekurentní rovnice nabývá hodnot $a = 1$, $b = 2$ a $d = 1$, tedy $a < b^{d} \Rightarrow T(n) \in \mathcal{O}(n)$. Složitost máme omezenou také zdola, hned v prvním volání provádíme $4n$ porovnání, tím pádem náš algoritmus patří do $\Theta(n)$.
+\end{document}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
