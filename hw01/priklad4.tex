@@ -1,0 +1,71 @@
+\documentclass[12pt]{iv003}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage[czech]{babel}
+\usepackage{amsmath, amsthm}
+\usepackage{enumerate}
+
+%% algoritmy
+%{{{ Latex definitions
+% ALGORITHM typesetting
+\usepackage[noline,boxruled,longend,linesnumbered,czech]{algorithm2e}
+%\SetKwInOut{Input}{vstup}\SetKwInOut{Output}{výstup}
+\SetKwInput{Input}{vstup}
+\SetKwInput{Output}{výstup}
+\newcommand{\donothing}[1]{#1}
+\SetArgSty{donothing}
+\SetCommentSty{emph}
+%\IncMargin{1em}
+%\setlength{\algomargin}{1em}
+\DontPrintSemicolon
+\SetKwIF{If}{ElseIf}{Else}{if}{then}{else if}{else}{fi}
+\SetKwFor{For}{for}{do}{od}
+\SetKwFor{While}{while}{do}{od}
+
+% hack to set the correct width of the algorithm
+\usepackage{xpatch}
+\xpretocmd{\algorithm}{\hsize=\linewidth}{}{}
+\xpretocmd{\function}{\hsize=\linewidth}{}{}
+\xpretocmd{\procedure}{\hsize=\linewidth}{}{}
+%%/algoritmy
+\usepackage{mathtools}
+\DeclarePairedDelimiter\floor{\lfloor}{\rfloor}
+
+%%% ZDE SADA, UKOL CISLO X, JMENO, UCO
+\setexercise{1}
+\setassignment{2}
+\setstudenta{Karel Kubíček}
+\setucoa{408351}
+\setstudentb{Henrich Lauko}
+\setucob{410438}
+
+
+\begin{document}
+
+\begin{enumerate}
+	\item Posloupnost $n$ operací \textsc{Insert} a \textsc{Min-All} má složitost $\mathcal{O}(n)$.
+	\item Posloupnost $n$ operací \textsc{Insert} a \textsc{Min-one} má složitost $\mathcal{O}(n)$.
+	\item Posloupnost $n$ operací \textsc{Insert} a \textsc{Delete} má složitost $\mathcal{O}(n)$.
+	\item Posloupnost $n$ operací \textsc{Insert} a \textsc{Delete} taková, že při každém volání se operace \textsc{Delete} volá s jiným parametrem $i$ má složitost $\mathcal{O}(n)$.
+\end{enumerate}
+
+\end{document}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
