@@ -42,32 +42,67 @@
 
 
 \begin{document}
-Datovou strukturou, která splňuje podmínky stanovené zadáním je B+ strom se stupněm 4. Navíc oproti normálnímu B+ stromu podle zadání do uzlů přidáme hodnotu \textit{small[x]}.
+\SetKwFunction{ffselectkey}{selectKey}
+\SetKwFunction{ffcontrolnode}{controlNode}
+
+Datovou strukturou, která splňuje podmínky stanovené zadáním je B+ strom se stupněm 4.
+Každý uzel bude mít tyto atributy: $p[x]$ je ukazatel na podstrom $x$, $pp$ je ukazatel na rodiče a $small[x]$ je klíč odpovídající nejmenší hodnotě v podstromu $x$.
+
 \begin{enumerate}
-	\item \textsc{Minimum} hledáme vždy v nelevějším podstromu. Rekurzivně se tedy volá minimum na nejlevější podstrom, dokud se nedosáhne úrovně listů, kde nejlevější potomek je minimum našeho stromu.\\
+	\item \textsc{Minimum} hledáme vždy v nejlevějším podstromu. Rekurzivně se tedy volá minimum na nejlevější podstrom, dokud se nedosáhne úrovně listů, kde nejlevější potomek je minimum našeho stromu.\\
+	
 	\begin{procedure}[H]
 	\SetKwFunction{ffminimum}{minimum}
 		\caption{minimum($T$) }
 		\Input{B+ strom $T$, ve kterém máme minimum hledat}
-		\Output{ukazatel na minimim}
+		\Output{ukazatel na minimum}
 		\uIf{$T$ je list} {
 			\Return{$T$} \tcp{nalezeno minimum, vracím ukazatel}
 		}
 		\uElse {
-			\Return{\ffminimum($T.firstSubTree$)} \tcp{firstSubTree je nejlevější podstrom}
+			\Return{\ffminimum($T.p0$)} \tcp{firstSubTree je nejlevější podstrom}
 		}
 	\end{procedure}
+	Časová složitost hledání minima je logaritmická, jelikož výška stromu je logaritmická (bude dokázáno níže u insert) a rekurze se v každém zanoření volá na strom s výškou o jedna menší.
 	\item \textsc{Insert}($k$) se skládá ze 2 částí. První částí je nalezení správného místa, na které prvek patří a zařazení na toto místo, druhou fází je v případě překročení limitu 4 potomci na strom rozdělení uzlu s 5 potomky na 2 uzly, jeden se dvěma, druhý se třema potomky a vypropagování kontroly velkého počtu potomků o úroveň výše.\\
+	
 	\begin{procedure}[H]
 	\SetKwFunction{ffinsert}{insert}
 		\caption{insert($T, k$) }
 		\Input{B+ strom $T$, do kterého máme přidat klíč $k$}
 		\Output{}
+		$x \leftarrow $ \ffselectkey($k$) \tcp{určí, do kterého podstromu patří zadaný klíč ($k > small[x] \wedge k \leq small[x+1]$)}
+		\uIf{$T$ je list} {
+			vlož $k$ na místo za $small[x]$ a posuň zbylé klíče \;
+			\ffcontrolnode($T$) \;
+		}
+		\uElse {
+			\ffinsert($T.p[x], k$) \;
+		}
+	\end{procedure}
+	
+	\begin{procedure}[H]
+		\caption{controlNode($T$) }
+		\Input{B+ strom $T$, jehož kořenový uzel kontrolujeme}
+		\Output{}
+		\uIf{počet klíčů v $T$ je 5} {
+			rozděl uzel na uzel se 3 a 2 klíči \;
+			vytvoř nový klíč v rodičovském uzlu \;
+			\ffcontrolnode($T.pp$) \tcp{zkontroluj rodičovský uzel, pokud neexistuje, tak ho vytvoř}
+		}
+	\end{procedure}
+	I insert je logaritmické asymptotické časové složitosti. První část algoritmu udělá maximálně $\log_{2}(n)$ kroků při hledání správného listu, do kterého má klíč zařadit, následující procedura \ffcontrolnode v případě plné zaplněnosti všech rodičovských uzlů udělá maximálně $\log_{4}(n)$ (ale pokud by se dělení uzlů vypropagovalo až ke kořeni, pak by i první část musela proběhnout v $\log_{4}(n)$ krocích). To dohromady patří do $\mathcal{O}(n)$
+	\item \textsc{Delete}($x$)
+	
+	\begin{procedure}[H]
+	\SetKwFunction{ffdelete}{delete}
+		\caption{delete($T$) }
+		\Input{B+ strom $T$, který máme vymazat}
+		\Output{}
 		\tcp{TODO}
 	\end{procedure}
-	\item \textsc{Decrease Key}($x,k$)
-	\item \textsc{Delete}($x$)
-	\item \textsc{Extract Min}
+	\item \textsc{Decrease Key}($x,k$) se dá realizovat posloupností procedur \ffdelete($x$) a následného \ffinsert($k$). To v součtu znamená složitost $2\cdot \log(n) \in \mathcal{O}(n)$.
+	\item \textsc{Extract Min}se dá realizovat složením procedur \ffdelete(\ffminimum). To v součtu znamená složitost $2\cdot \log(n) \in \mathcal{O}(n)$.
 \end{enumerate}
 
 \end{document}
