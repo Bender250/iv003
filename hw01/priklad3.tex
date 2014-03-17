@@ -16,6 +16,8 @@
 \newcommand{\donothing}[1]{#1}
 \SetArgSty{donothing}
 \SetCommentSty{emph}
+\SetFuncSty{textsc}
+\SetProcNameSty{textsc}
 %\IncMargin{1em}
 %\setlength{\algomargin}{1em}
 \DontPrintSemicolon
@@ -42,38 +44,40 @@
 
 
 \begin{document}
-\SetKwFunction{ffselectkey}{selectKey}
-\SetKwFunction{ffcontrolnode}{controlNode}
+\SetKwFunction{ffselectkey}{SelectKey}
+\SetKwFunction{ffcontrolnode}{ControlNode}
+\SetKwFunction{ffminimum}{Minimum}
+\SetKwFunction{ffinsert}{Insert}
+\SetKwFunction{ffdecreasekey}{DecreaseKey}
+\SetKwFunction{ffdelete}{Delete}
+\SetKwFunction{ffupdatekey}{UpdateKey}
 
 Datovou strukturou, která splňuje podmínky stanovené zadáním je B+ strom se stupněm 4.
 Každý uzel bude mít tyto atributy: $p[x]$ je ukazatel na podstrom $x$, $pp$ je ukazatel na rodiče a $small[x]$ je klíč odpovídající nejmenší hodnotě v podstromu $x$.
 
 \begin{enumerate}
-	\item \textsc{Minimum} hledáme vždy v nejlevějším podstromu. Rekurzivně se tedy volá minimum na nejlevější podstrom, dokud se nedosáhne úrovně listů, kde nejlevější potomek je minimum našeho stromu.\\
+	\item \ffminimum hledáme vždy v nejlevějším podstromu. Rekurzivně se tedy volá \ffminimum na nejlevější podstrom, dokud se nedosáhne úrovně listů, kde nejlevější potomek je minimum našeho stromu.\\
 	
 	\begin{procedure}[H]
-	\SetKwFunction{ffminimum}{minimum}
-		\caption{minimum($T$) }
-		\Input{B+ strom $T$, ve kterém máme minimum hledat}
+		\caption{Minimum($T$)}
+		\Input{234 strom $T$, ve kterém máme minimum hledat}
 		\Output{ukazatel na minimum}
 		\uIf{$T$ je list} {
 			\Return{$T$} \tcp{nalezeno minimum, vracím ukazatel}
 		}
 		\uElse {
-			\Return{\ffminimum($T.p0$)} \tcp{firstSubTree je nejlevější podstrom}
+			\Return{\ffminimum($T.p0$)} \tcp{T.p0 je ukazatel na nejlevější podstrom} 
 		}
 	\end{procedure}
 	Časová složitost hledání minima je logaritmická, jelikož výška stromu je logaritmická (bude dokázáno níže u insert) a rekurze se v každém zanoření volá na strom s výškou o jedna menší.
-	\item \textsc{Insert}($k$) se skládá ze 2 částí. První částí je nalezení správného místa, na které prvek patří a zařazení na toto místo, druhou fází je v případě překročení limitu 4 potomci na strom rozdělení uzlu s 5 potomky na 2 uzly, jeden se dvěma, druhý se třema potomky a vypropagování kontroly velkého počtu potomků o úroveň výše.\\
+	\item \ffinsert($k$) se skládá ze 2 částí. První částí je nalezení správného místa, na které prvek patří a zařazení na toto místo, druhou fází je v případě překročení limitu 4 potomci na strom rozdělení uzlu s 5 potomky na 2 uzly, jeden se dvěma, druhý se třema potomky a vypropagování kontroly velkého počtu potomků o úroveň výše.\\
 	
 	\begin{procedure}[H]
-	\SetKwFunction{ffinsert}{insert}
-		\caption{insert($T, k$) }
-		\Input{B+ strom $T$, do kterého máme přidat klíč $k$}
-		\Output{}
+		\caption{Insert($T, k$) }
+		\Input{234 strom $T$, do kterého máme přidat klíč $k$}
 		$x \leftarrow $ \ffselectkey($k$) \tcp{určí, do kterého podstromu patří zadaný klíč ($k > small[x] \wedge k \leq small[x+1]$)}
 		\uIf{$T$ je list} {
-			vlož $k$ na místo za $small[x]$ a posuň zbylé klíče \;
+			vlož $k$ na místo za $small[x]$ a posuň zbylé klíče doprava \; 
 			\ffcontrolnode($T$) \;
 		}
 		\uElse {
@@ -82,16 +86,21 @@ Každý uzel bude mít tyto atributy: $p[x]$ je ukazatel na podstrom $x$, $pp$ j
 	\end{procedure}
 	
 	\begin{procedure}[H]
-		\caption{controlNode($T$) }
-		\Input{B+ strom $T$, jehož kořenový uzel kontrolujeme}
+		\caption{ControlNode($T$) }
+		\Input{234 strom $T$, jehož kořenový uzel kontrolujeme}
 		\Output{}
 		\uIf{počet klíčů v $T$ je 5} {
-			rozděl uzel na uzel se 3 a 2 klíči \;
-			vytvoř nový klíč v rodičovském uzlu \;
-			\ffcontrolnode($T.pp$) \tcp{zkontroluj rodičovský uzel, pokud neexistuje, tak ho vytvoř}
+			rozděl uzel na uzly se 3 a 2 klíči \;
+			\uIf{existuje rodič} {
+				vytvoř nový klíč v rodičovském uzlu \tcp{na 1. už existuje, vytvoří se na 2. dvojprvkový uzel}
+			}\uElse{
+				vytvoř nového rodiče \;
+				přidej oba ukazatele na rozdelené uzly do rodiče \;	
+			} 
+			\ffcontrolnode($T.pp$) \tcp{zkontroluj rodičovský uzel}
 		}
 		\uIf{počet klíčů v $T$ je 1} {
-			spoj uzel se sousedním uzlem s méně klíči \;
+			spoj uzel se sousedním uzlem s méně klíči \;			
 			odstraň z rodičovského uzlu klíč pro uzel $T$ \;
 			\ffcontrolnode($T.pp.p[x]$) \tcp{zkontroluj uzel vzniklý spojením}
 		}
@@ -100,20 +109,21 @@ Každý uzel bude mít tyto atributy: $p[x]$ je ukazatel na podstrom $x$, $pp$ j
 	\item \textsc{Delete}($x$)
 	
 	\begin{procedure}[H]
-	\SetKwFunction{ffdelete}{delete}
-		\caption{delete($T$) }
-		\Input{B+ strom $T$, který máme vymazat}
+		\caption{Delete($T$) }
+		\Input{234 strom $T$, který máme vymazat}
 		\Output{}
-		odstraň z rodičovského uzlu klíč pro uzel $T$ \;
-		\ffcontrolNode($T.pp$) \;
-		uvolni paměť $T$ \;
+		odstraň z rodičovského uzlu klíč pro uzel $T$ \; 
+		\ffupdatekey() \tcp{projde uzly ke kořeni a opraví v nich hodnoty small[x] jestli se změnili}
+		\ffcontrolnode($T.pp$) \;
+		smaž $T$ \; 
 	\end{procedure}
 	
 	Podobná procedura, jako insert, tentokrát nutno kontrolovat, jestli není v rodičovském uzlu klíčů málo (1). To, že operace patří do $\mathcal{O}(\log(n))$
-	\item \textsc{Decrease Key}($x,k$) se dá realizovat posloupností procedur \ffdelete($x$) a následného \ffinsert($k$). To v součtu znamená složitost $2\cdot \log(n) \in \mathcal{O}(\log(n))$.
-	\item \textsc{Extract Min}se dá realizovat složením procedur \ffdelete(\ffminimum). To v součtu znamená složitost $2\cdot \log(n) \in \mathcal{O}(\log(n))$.
+	\item \ffdecreasekey($x,k$) se dá realizovat posloupností procedur \ffdelete($x$) a následného \ffinsert($k$). To v součtu znamená složitost $2\cdot \log(n) \in \mathcal{O}(\log(n))$.
+	\item \textsc{Extract Min} se dá realizovat složením procedur \ffdelete(\ffminimum). To v součtu znamená složitost $2\cdot \log(n) \in \mathcal{O}(\log(n))$.
 \end{enumerate}
-U důkazů složitosti jsem vždy předpokládal, že strom bude mít výšku $\log_{4}(n)$ až $\log_{4}(n)$. Pokud by tato vlastnost neplatila, pak by složitost operací neodpovídala zadání. Vlastnosti stromu tedy stojí na proceduře \ffcontrolnode.
+U důkazů složitosti jsem vždy předpokládal, že strom bude mít výšku $\log_{4}(n)$ 
+až $\log_{2}(n)$. Pokud by tato vlastnost neplatila, pak by složitost operací neodpovídala zadání. Pro dokázání logaritmické výšky musíme dokázat korektnost procedůry \ffcontrolnode. Pro platnost předpokádejme, že počáteční stav stromu jsou alespoň 2 uzly. \ffcontrolnode nám zajišťuje, že v každém uzlu budou 2,3 nebo 4 podstromy. Zvýšení výšky  nastáva jenom v případe, že vkládame $4^{h - 1}$. klíč. To nám zaručuje, že všechny klíče jsou v listech stejné úrovně což společne s podmínkou, že v uzlech bodou právě 2,3 nebo 4 podstromy dáva logaritmickou výšku.    
 \end{document}
 
 

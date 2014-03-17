@@ -44,10 +44,14 @@
 \begin{document}
 
 \begin{enumerate}
-	\item Posloupnost $n$ operací \textsc{Insert} a \textsc{Min-All} má složitost $\mathcal{O}(n)$.
-	\item Posloupnost $n$ operací \textsc{Insert} a \textsc{Min-one} má složitost $\mathcal{O}(n)$.
-	\item Posloupnost $n$ operací \textsc{Insert} a \textsc{Delete} má složitost $\mathcal{O}(n)$.
+	\item Posloupnost $n$ operací \textsc{Insert} a \textsc{Min-All} má složitost $\mathcal{O}(n)$.\\
+	Neplatí. Můžeme vložit $n/2$ stejných prvků, následně můžeme volat \textsc{Min-All}, která nesmaže žádný prvek, tím pádem můžeme volat tuto operaci $n/2$-krát vždy se složitostí $\mathcal{O}(n)$, tedy $n/2 \cdot \mathcal{O}(n) = \mathcal{O}(n^{2})$. 
+	\item Posloupnost $n$ operací \textsc{Insert} a \textsc{Min-one} má složitost $\mathcal{O}(n)$.\\
+	Platí.
+	\item Posloupnost $n$ operací \textsc{Insert} a \textsc{Delete} má složitost $\mathcal{O}(n)$.\\
+	Neplatí. Můžeme vložit $n/2$ stejných prvků $x$, následně můžeme volat \textsc{Delete}($S,x$), která nesmaže žádný prvek, tím pádem můžeme volat tuto operaci $n/2$-krát vždy se složitostí $\mathcal{O}(n)$, tedy $n/2 \cdot \mathcal{O}(n) = \mathcal{O}(n^{2})$. 
 	\item Posloupnost $n$ operací \textsc{Insert} a \textsc{Delete} taková, že při každém volání se operace \textsc{Delete} volá s jiným parametrem $i$ má složitost $\mathcal{O}(n)$.
+	Platí. 
 \end{enumerate}
 
 \end{document}

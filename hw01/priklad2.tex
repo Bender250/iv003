@@ -44,7 +44,7 @@
 \begin{procedure}[H]
 \SetKwFunction{fffindEso}{findEso}
     \caption{findEso($A, fromX, toX, fromY, toY$) }
-    \Input{čtvercová matice $A$ vymezená v intervalu $x \in <fromX, toX>, y \in <fromY, toY>$}
+    \Input{čtvercová matice $A$ vymezená v intervalu $x \in \langle fromX, toX\rangle, y \in \langle fromY, toY\rangle$}
     \Output{souřadnice esa v matici, tedy prvek, který je větší, než jeho sousedé}
     \If{$toX = fromX$}{
 		\Return{$fromX, fromY$} \tcp{nalezeno eso, vracím souřadnice}
@@ -102,7 +102,7 @@ Předpokládejme platnost invariantu pro $m$-té rekurzivní volání.
 V $m+1$-ním rekurzivním volání z předchozího tvrzení víme, že v aktuální submatici se nachází eso. %%Nyní si situaci můžeme rozdělit na 2 možnosti.\\
 %%1. maximum z minulého rekurzivního volání je jediným esem v aktuální submatici. Pak od tohoto esa musí existovat klesající posloupnost čísel (nemusí být jen jedna), která vede k maximu ze středového kříže aktuální submatice. Jediným prvkem této posloupnosti, který se nachází na středovém kříži může být naše nalezené maximum. Tato posloupnost se tedy nachází v pouze jedné čtvrtině z aktuální submatice, tato čtvrtina odpovídá čtvrtině, v níž se nachází nalezené maximum a zároveň se jedná o čtvrtinu, ve které se nachází eso. Po dalším rekurzivním volání se tedy invariant nemění.
 %%2. Es je více, nebo dané jediné eso není maximem z původního rekurzivního volání.
-Pak platí, že od maxima ze středového kříže vede rostoucí posloupnost k esu a jediným prvkem této posloupnosti, který se nachází na střeodvém kříži, je právě nalezené maximum. Pokud by toto tvrzení neplatilo a posloupnost by měla další prvky ležící na středovém kříži, pak by díky tranzitivitě relace \textit{větší než} musel být daný jiný prvek posloupnosti ležící na kříži větší než nalezené maximum a tím pádem by měl být sám maximem.
+Pak platí, že od maxima ze středového kříže vede rostoucí posloupnost k esu a jediným prvkem této posloupnosti, který se nachází na středovém kříži, je právě nalezené maximum. Pokud by toto tvrzení neplatilo a posloupnost by měla další prvky ležící na středovém kříži, pak by díky tranzitivitě relace \textit{větší než} musel být daný jiný prvek posloupnosti ležící na kříži větší než nalezené maximum a tím pádem by měl být sám maximem.
 \paragraph{Asymptotická časová složitost} algoritmu je $\Theta(n)$. To lze odvodit z rekurentní rovnice, která popisuje složitost každého volání rekurze a vypadá takto:\\
 $$T(n) = T(\lceil \frac{n}{2} \rceil) + \mathcal{O}(n)$$
 $$T(1) = 1$$
