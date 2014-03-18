@@ -54,6 +54,7 @@
 
 Datovou strukturou, která splňuje podmínky stanovené zadáním je B+ strom se stupněm 4.
 Každý uzel bude mít tyto atributy: $p[x]$ je ukazatel na podstrom $x$, $pp$ je ukazatel na rodiče a $small[x]$ je klíč odpovídající nejmenší hodnotě v podstromu $x$.
+Naše řešení předpokládá, že funkce dostanou na vstup námi vytvořený strom a ne libovolný 2, 3, 4 strom.
 
 \begin{enumerate}
 	\item \ffminimum hledáme vždy v nejlevějším podstromu. Rekurzivně se tedy volá \ffminimum na nejlevější podstrom, dokud se nedosáhne úrovně listů, kde nejlevější potomek je minimum našeho stromu.\\
