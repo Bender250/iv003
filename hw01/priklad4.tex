@@ -46,12 +46,35 @@
 \begin{enumerate}
 	\item Posloupnost $n$ operací \textsc{Insert} a \textsc{Min-All} má složitost $\mathcal{O}(n)$.\\
 	Neplatí. Můžeme vložit $n/2$ stejných prvků, následně můžeme volat \textsc{Min-All}, která nesmaže žádný prvek, tím pádem můžeme volat tuto operaci $n/2$-krát vždy se složitostí $\mathcal{O}(n)$, tedy $n/2 \cdot \mathcal{O}(n) = \mathcal{O}(n^{2})$. 
+	
 	\item Posloupnost $n$ operací \textsc{Insert} a \textsc{Min-one} má složitost $\mathcal{O}(n)$.\\
-	Platí.
+	Platí. Dokážeme pomocí metody účtů. Přiřadíme nasledující ceny operacím:
+	\begin{center}
+	\begin{tabular}{ l | c | c }
+		operace 			&	reálni cena ($c_{i}$)	& 	amortizovaná cena ($\widehat{c_{i}}$) \\ \hline \hline
+		\textsc{Insert} 	& 	1						&	2 \\
+		\textsc{Min-One}	&	$délka\ seznamu - 1$					&	0 \\ \hline 
+	\end{tabular}
+	\end{center}
+	
+	Při \textsc{Insert} vložíme na účet 2 kredity, jeden znich slouži na zaplacení operace \textsc{Insert} a druhej na zaplacení smazáni sama sebe při operaci \textsc{Min-One}. Keďže v každém momentu bude mýt každý prvek jeden kredit, tak účet nemúže jet do mísunu. Tudiž amortizovaná cena může být nanejvýš $2n$ kreditů, kde $n$ je počet operací. Teda pro $n$ operací je amortizovaná složitost $\mathcal{O}(n)$.
+	
 	\item Posloupnost $n$ operací \textsc{Insert} a \textsc{Delete} má složitost $\mathcal{O}(n)$.\\
 	Neplatí. Můžeme vložit $n/2$ stejných prvků $x$, následně můžeme volat \textsc{Delete}($S,x$), která nesmaže žádný prvek, tím pádem můžeme volat tuto operaci $n/2$-krát vždy se složitostí $\mathcal{O}(n)$, tedy $n/2 \cdot \mathcal{O}(n) = \mathcal{O}(n^{2})$. 
+	
 	\item Posloupnost $n$ operací \textsc{Insert} a \textsc{Delete} taková, že při každém volání se operace \textsc{Delete} volá s jiným parametrem $i$ má složitost $\mathcal{O}(n)$.
-	Platí. 
+	Platí. Dokážeme pomocí metody účtů. Přiřadíme nasledující ceny operacím:
+	
+	\begin{center}
+	\begin{tabular}{ l | c | c }
+		operace 			&	reálni cena ($c_{i}$)	& 	amortizovaná cena ($\widehat{c_{i}}$) \\ \hline \hline
+		\textsc{Insert} 	& 	1						&	2 \\
+		\textsc{Delete}		&	$délka\ seznamu - počet\ prvků\ i$					&	0 \\ \hline 
+	\end{tabular}
+	\end{center}
+	
+	Při \textsc{Insert} vložíme na účet 2 kredity, jeden znich slouži na zaplacení operace \textsc{Insert} a druhej na zaplacení smazáni sama sebe při operaci \textsc{Delete}. Keďže v každém momentu bude mýt každý prvek jeden kredit, tak účet nemúže jet do mísunu. Při operaci \textsc{Delete} se smaže jen $délka\ seznamu - počet\ prvků\ i$ prvků, teda počet prvků $i$ musí zostat s 1 kreditem Tudiž amortizovaná cena může být nanejvýš $2n$ kreditů, kde $n$ je počet operací. Teda pro $n$ operací je amortizovaná složitost $\mathcal{O}(n)$.
+	
 \end{enumerate}
 
 \end{document}
