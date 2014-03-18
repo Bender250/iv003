@@ -42,7 +42,18 @@
 
 
 \begin{document}
-
+\begin{enumerate}
+	\item 
+	\item Algoritmus, který potřebujeme, je algoritmus hledání těžiště. To lze provést například takto:\\
+	
+	\begin{enumerate}
+		\item Všem bodům přiřadíme váhu 1.
+		\item Procházíme body, vezmeme dvojici a vypočteme její vážený průměr. Vytvoříme tedy nový bod na pozici váženého průměru s váhou rovnou součtu 2 průměrovaných bodů a původní body smažeme.
+		\item Opakujeme 2. krok tak dlouho, dokud nám nezůstane jen jeden jediný bod, který bude těžištěm všech předchozích bodů. Tento bod tedy minimalizuje zadanou sumu.
+	\end{enumerate}
+	Konečnost algoritmu je zřejmá, v každé iteraci se celkový počet bodů zmenší o 1. Časová složitost je lineární k počtu bodů. 1. krok projde včechny body, je tedy proveden v lineárním čase. 2. krok je proveden v konstantním čase, počet opakování je roven počátečnímu počtu bodů bez jedné.\\
+	Algoritmus funguje v libovolné dimenzi, jen se mění vzorec pro počítání průměru ze 2 bodů.
+\end{enumerate}
 \end{document}
 
 

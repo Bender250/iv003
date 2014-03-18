@@ -93,7 +93,7 @@
 \end{procedure}
 \end{small}
 \paragraph{Pojmy:} abych příliš často nemusel formálně popisovat množinu prvků matice, která se skládá z prvků ve sloupcích odpovídajících $halfX$ a $halfX+1$ v rozsahu $y \in <fromY, toY>$ a řádkům odpovídajících $halfY$ a $halfY+1$ v rozsahu $x \in <fromX, toX>$, tak pro tuto množinu prvků zavádím pojem \textit{středový~kříž}.
-\paragraph{Popis algoritmu:} tento rekurzivní algoritmus je založen na tom, že se po každém průchodu změnší část matice, se kterou pracuje na čtvrtinu. Volbou maxima ze středového kříže se rozhoduje, kterou ze 4 možných čtvrtin má vybrat. Nalezení maxima zaručuje, že v dané čtvrtině maximum musí být (formálně rozebráno níže), rekurzivně se tedy algoritmus zanoří do dané čtvrtiny. Eso tedy nemusí být maximum z prvního výběru. Algoritmus by šel upravit, aby místo dělení na čtvrtiny dělil matici na poloviny, střídavě horizontálně a vertikálně, díky čemuž by měl trochu menší složitost (asymptotická složitost by však stále byla $\mathcal{O}(n)$), cenou by však byl mnohem složitější zápis.
+\paragraph{Popis algoritmu:} tento rekurzivní algoritmus je založen na tom, že se po každém průchodu změnší část matice, se kterou pracuje na čtvrtinu. Volbou maxima ze středového kříže se rozhoduje, kterou ze 4 možných čtvrtin má vybrat. Nalezení maxima zaručuje, že v dané čtvrtině maximum musí být (formálně rozebráno níže), rekurzivně se tedy algoritmus zanoří do dané čtvrtiny. Eso tedy nemusí být maximum z prvního výběru. Algoritmus by šel upravit, aby místo dělení na čtvrtiny dělil matici na poloviny, střídavě horizontálně a vertikálně, díky čemuž by měl trochu menší složitost (asymptotická složitost by však stále byla $\mathcal{O}(n)$), cenou by však byl mnohem složitější zápis. Při volání rekurze je nutno kontrolovat, aby se volala se čtvercovou maticí, což v pseudokódu není zapsáno (z důvodu složitého zápisu). Pokud by měla zvolená čtvrtina jinou šířku než délku, pak je nutno rekurzi předat větší matici (tak, aby jeden řádek navíc zaručil čtvercovost).
 \paragraph{Korektnost:} algoritmus je totálně korektní, pokud skončí a výstup splňuje výstupní podmínku, kterou je v našem případě, že nalezený prvek je eso. Konečnost je zřejmá, jelikož rozměry matice $n$ po každém kroce klesnou minimálně na $\lceil \frac{n}{2} \rceil$, přičemž pro $n = 1$ (k čemuž algoritmus konverguje) algoritmus skončí.\\
 Abychom mohli dokázat, že je algoritmus parciálně korektní, je nutno dokázat invariant: v každém rekurzivním volání existuje v daném intervalu matice alespoň 1 eso.\\
 Již ze zadání vyplívá, že při prvním volání s celou vstupní maticí musí invariant platit. To je zaručeno unikátností všech prvků.\\
@@ -109,21 +109,3 @@ $$T(1) = 1$$
 Tato rovnice říká, že při každém rekurzivním volání se šířka matice zmenšuje na polovinu (zaokrouhleno nahoru), a před tím se provede $4n$ porovnání při hledání maxima ve středovém kříži. Dalších operací je konstantní počet, takže platí, že $4n + k \in \mathcal{O}(n)$.
 Horní hranici získáme pomocí master theoremu, přičemž naše rekurentní rovnice nabývá hodnot $a = 1$, $b = 2$ a $d = 1$, tedy $a < b^{d} \Rightarrow T(n) \in \mathcal{O}(n)$. Složitost máme omezenou také zdola, hned v prvním volání provádíme $4n$ porovnání, tím pádem náš algoritmus patří do $\Theta(n)$.
 \end{document}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
