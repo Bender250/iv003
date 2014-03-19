@@ -49,8 +49,8 @@
     \If{$toX = fromX$}{
 		\Return{$fromX, fromY$} \tcp{nalezeno eso, vracím souřadnice}
     }
-    $halfX \leftarrow (toX - fromX)/2$ \;
-    $halfY \leftarrow (toY - fromY)/2$ \;
+    $halfX \leftarrow (toX + fromX)/2$ \;
+    $halfY \leftarrow (toY + fromY)/2$ \;
     \tcp{maxX a maxY jsou souřadnice maxima z prvků kolem horizontálního a vertikálního středu}
     $maxX \leftarrow halfX$ \tcp{pro hledání maxima začnu nastavením souřadnic na 1. prvek}
     $maxY \leftarrow fromY$ \;
