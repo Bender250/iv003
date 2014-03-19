@@ -51,15 +51,15 @@
     \If{$toX = fromX$}{
 		\Return{$fromX, fromY$} \tcp{nalezeno eso, vracím souřadnice}
     }
-    $halfX \leftarrow \floor*{(toX - fromX)/2}$ \;
-    $halfY \leftarrow \floor*{(toY - fromY)/2}$ \;
+    $halfX \leftarrow \floor*{(toX + fromX)/2}$ \;
+    $halfY \leftarrow \floor*{(toY + fromY)/2}$ \;
     \tcp{maxX a maxY jsou souřadnice maxima z prvků kolem horizontálního a vertikálního středu}
     \tcp{V jednom cyklu projedu napravo a nalevo od středu vertikálne a najdu maximum}
     $maxX \leftarrow$ $x$, kde je maximálni $A[x][y] | x \in \langle fromX, toX \rangle$ a $y \in \langle halfY, halfY + 1 \rangle$ \;
     $maxY \leftarrow$ $y$, kde je maximálni $A[x][y] | x \in \langle fromX, toX \rangle$ a $y \in \langle halfY, halfY + 1 \rangle$ \;
 	\tcp{přechod horizontálne od středu}
-    $maxX \leftarrow$ $x$, kde je maximálni $A[x][y] | x \in \langle halfX, halfX +1 \rangle$ a $y \in \langle fromY, toY \rangle$ \;
-    $maxY \leftarrow$ $y$, kde je maximálni $A[x][y] | x \in \langle halfX, halfX +1 \rangle$ a $y \in \langle fromY, toY \rangle$ \;
+    $maxX \leftarrow$ $x$, kde je maximálni $A[maxX][maxY] \cup A[x][y] | x \in \langle halfX, halfX +1 \rangle$ a $y \in \langle fromY, toY \rangle$ \;
+    $maxY \leftarrow$ $y$, kde je maximálni $A[maxX][maxY] \cup A[x][y] | x \in \langle halfX, halfX +1 \rangle$ a $y \in \langle fromY, toY \rangle$ \;
 
     \uIf{$maxX \leq halfX$} {
 		\uIf{$maxY \leq halfY$} {
@@ -78,7 +78,7 @@
 \end{procedure}
 \end{small}
 \paragraph{Pojmy:} abych příliš často nemusel formálně popisovat množinu prvků matice, která se skládá z prvků ve sloupcích odpovídajících $halfX$ a $halfX+1$ v rozsahu $y \in <fromY, toY>$ a řádkům odpovídajících $halfY$ a $halfY+1$ v rozsahu $x \in <fromX, toX>$, tak pro tuto množinu prvků zavádím pojem \textit{středový~kříž}.
-\paragraph{Popis algoritmu:} tento rekurzivní algoritmus je založen na tom, že se po každém průchodu změnší část matice, se kterou pracuje na čtvrtinu. Volbou maxima ze středového kříže se rozhoduje, kterou ze 4 možných čtvrtin má vybrat. Nalezení maxima zaručuje, že v dané čtvrtině maximum musí být (formálně rozebráno níže), rekurzivně se tedy algoritmus zanoří do dané čtvrtiny. Eso tedy nemusí být maximum z prvního výběru. Algoritmus by šel upravit, aby místo dělení na čtvrtiny dělil matici na poloviny, střídavě horizontálně a vertikálně, díky čemuž by měl trochu menší složitost (asymptotická složitost by však stále byla $\mathcal{O}(n)$), cenou by však byl mnohem složitější zápis.
+\paragraph{Popis algoritmu:} tento rekurzivní algoritmus je založen na tom, že se po každém průchodu změnší část matice, se kterou pracuje na čtvrtinu. Volbou maxima ze středového kříže se rozhoduje, kterou ze 4 možných čtvrtin má vybrat. Nalezení maxima zaručuje, že v dané čtvrtině maximum musí být (formálně rozebráno níže), rekurzivně se tedy algoritmus zanoří do dané čtvrtiny. Eso tedy nemusí být maximum z prvního výběru. Algoritmus by šel upravit, aby místo dělení na čtvrtiny dělil matici na poloviny, střídavě horizontálně a vertikálně, díky čemuž by měl trochu menší složitost (asymptotická složitost by však stále byla $\mathcal{O}(n)$), cenou by však byl mnohem složitější zápis. Při volání rekurze je nutno kontrolovat, aby se volala se čtvercovou maticí, což v pseudokódu není zapsáno (z důvodu složitého zápisu). Pokud by měla zvolená čtvrtina jinou šířku než délku, pak je nutno rekurzi předat větší matici (tak, aby jeden řádek navíc zaručil čtvercovost).
 \paragraph{Korektnost:} algoritmus je totálně korektní, pokud skončí a výstup splňuje výstupní podmínku, kterou je v našem případě, že nalezený prvek je eso. Konečnost je zřejmá, jelikož rozměry matice $n$ po každém kroce klesnou minimálně na $\lceil \frac{n}{2} \rceil$, přičemž pro $n = 1$ (k čemuž algoritmus konverguje) algoritmus skončí.\\
 Abychom mohli dokázat, že je algoritmus parciálně korektní, je nutno dokázat invariant: v každém rekurzivním volání existuje v daném intervalu matice alespoň 1 eso.\\
 Již ze zadání vyplívá, že při prvním volání s celou vstupní maticí musí invariant platit. To je zaručeno unikátností všech prvků.\\
