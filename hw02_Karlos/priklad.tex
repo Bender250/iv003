@@ -1,0 +1,104 @@
+\documentclass[12pt]{iv003}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage[czech]{babel}
+\usepackage{amsmath, amsthm}
+\usepackage{enumerate}
+
+%% algoritmy
+%{{{ Latex definitions
+% ALGORITHM typesetting
+\usepackage[noline,boxruled,longend,linesnumbered,czech]{algorithm2e}
+%\SetKwInOut{Input}{vstup}\SetKwInOut{Output}{výstup}
+\SetKwInput{Input}{vstup}
+\SetKwInput{Output}{výstup}
+\newcommand{\donothing}[1]{#1}
+\SetArgSty{donothing}
+\SetCommentSty{emph}
+%\IncMargin{1em}
+%\setlength{\algomargin}{1em}
+\DontPrintSemicolon
+\SetKwIF{If}{ElseIf}{Else}{if}{then}{else if}{else}{fi}
+\SetKwFor{For}{for}{do}{od}
+\SetKwFor{While}{while}{do}{od}
+\SetFuncSty{textsc} \SetProcNameSty{textsc}
+
+% hack to set the correct width of the algorithm
+\usepackage{xpatch}
+\xpretocmd{\algorithm}{\hsize=\linewidth}{}{}
+\xpretocmd{\function}{\hsize=\linewidth}{}{}
+\xpretocmd{\procedure}{\hsize=\linewidth}{}{}
+%%/algoritmy
+
+%%% ZDE SADA, UKOL CISLO X, JMENO, UCO
+\setexercise{2}
+\setassignment{1}
+\setstudenta{Karel Kubíček}
+\setucoa{408351}
+\setstudentb{Henrich Lauko}
+\setucob{410438}
+
+\begin{document}
+
+\SetKwFunction{ffmin}{Min} %v pripade stejnych hodnot bere prvni
+\SetKwFunction{fftakePair}{takePair} %po konci je vse NaN
+
+{\small \begin{procedure}[H]
+\SetKwFunction{ffcomputeSiluete}{computeSiluete}
+    \caption{computeSiluete($Input, from, to$) }
+    \Input{pole uspořádaných trojic $Input$, využíváme v zanoření rozsah od $from$ do $to$}
+    \Output{vypočtená silueta v poli uspořádané $n$-tice $Output$}
+    \If{$to = from$}{
+		\Return{$Input[from]$} \tcp{rekurzivní zarážka, vrací pole 3 čísel}
+    }
+    $half \leftarrow (to + from)/2$ \;
+    $Output[0] \leftarrow$ \ffcomputeSiluete($Input, from, half$) \;
+    $Output[1] \leftarrow$ \ffcomputeSiluete($Input, half+1, to$) \;
+	\tcp{nechť u těchto polí můžeme pomocí funkce \fftakePair($i$) vzít $i$-tou dvojici, přičemž poslední číslo utvoří dvojici s \textsc{NaN}}
+	dvojice souřadnic $first(x,y) \leftarrow$ \ffmin($Output[0]$.\fftakePair(0), $Output[1]$.\fftakePair(0)) \tcp{vybere pole s minimem $x$, z tohoto pole vezme i $y$}
+	\uIf{$first \in Output[0]$} {
+		$chosen \leftarrow 0$
+	}
+	\uElse {
+		$chosen \leftarrow 1$
+	}
+	$counter[chosen] \leftarrow 1$ \;
+	$counter[!chosen] \leftarrow 0$ \;
+	$NewOutput \leftarrow$ prázdné pole \;
+    \While{$first.y \not=$\textsc{NaN}} {
+		$second(x,y) \leftarrow Output[!chosen].$ \fftakePair($counter[!chosen]$) \;
+		%\While{$second.y < first.y~\vee~second.x < Output[!chosen].$\fftakePair($counter[chosen]$).$x$} {
+			%$second \leftarrow Output[!chosen].$ \fftakePair($counter[!chosen]$) \;
+			%$counter[!chosen] \leftarrow counter[!chosen] + 1$
+		%}
+		\If{$second.y > first.y$} {
+			přidej dvojici $first$ do $NewOutput$ \;
+			$first \leftarrow second$ \;
+			$second \leftarrow Output[chosen].$ \fftakePair($counter[chosen]$) \;
+			$counter[chosen] \leftarrow counter[chosen] + 1$ \;
+			$chosen \leftarrow !chosen$ \;
+		}
+		$following \leftarrow Output[!chosen].$\fftakePair($counter[!chosen]$) \;
+		\If{$second.x < folowing.x$} {
+			\tcp{\textsc{NaN} je vždy větší než libovolné číslo}
+			přidej dvojici $first$ do $NewOutput$ \;
+			$first(x,y) \leftarrow$ \ffmin($Output[0]$.\fftakePair($counter[0]$), $Output[1]$.\fftakePair($counter[1]$)) \;
+			\uIf{$first \in Output[0]$} {
+				$chosen \leftarrow 0$
+			}
+			\uElse {
+				$chosen \leftarrow 1$
+			}
+			$counter[chosen] \leftarrow counter[chosen] + 1$ \;
+		}
+    }
+    přidej $first.x$ do $NewOutput$ \;
+    \Return($NewOutput$)
+\end{procedure}}
+\paragraph{Popis algoritmu:} samotná myšlenka algoritmu je jednoduchá. Vstup rozdělíme na jednotlivé trojice reprezentující siluetu jedné budovy. V kroku "panuj" pak spojujeme vždy 2 dané siluety. Nejtěžším krokem je spojení. Musíme procházet dvojici siluet a ověřovat, která je v dané pozici vyšší a tu přidáme do výsledné siluety. To se v algoritmu děje od řádku 7.\\
+Prvně musíme vybrat siluetu, která má první budovu s menší souřadnicí $x$. Pomocná funkce \ffmin dostane jako vstup 2 dvojice a ty porovná podle první složky - $x$. Poté musíme zjistit, ze kterého pole jsme dvojici vybrali a správně nastavit počítadla vybraných dvojic. Zápisem $!chosen$ myslím "negaci", tedy druhou možnou hodnotu.\\
+Nejzajímavější částí algoritmu je cyklus. Ten se zastaví v případě, že jsme již prošli obě pole, což lze testovat třeba tak, že otestujeme, jestli je ve dvojici $first$ číslo. To nám rozšiřuje nároky na funkci \ffmin - ta musí fungovat i pro \textsc{NaN}, v takovém případě vždy volí libovolné číslo. Pro 2 \textsc{NaN} ukládá do dvojice \textsc{NaN}. V Cyklu s každým průchodem posouváme dvojici $second$, kterou testujeme vůči 2 různým věcem. Zaprvé ji porovnáváme s $y$ hodnotou první dvojice, zadruhé testujeme, zdali už jsme se v pomyslném počítadle na ose $x$ neposunuli na další budovu v první siluetě. Do výstupu přidáváme první dvojici za podmínky, že vstoupíme do jednoho z \textsc{if} bloků. První z podmínek v případě splnění prohazuje siluety, ze kterých budeme vybírat, druhá jen posouvá dvojici na další budovu stejné siluety.
+\paragraph{Korektnost:} 
+\paragraph{Asymptotická časová složitost:} algoritmu je dle zadání $\mathcal{O}(n\cdot\log(n))$. Rekurze se volá $\log_{2}(n)$-krát přičemž v $k$-tém rekurzivním zanoření (první volání bez rekurze odpovídá $k=0$) budu spojovat celkem $2^{k}$ $m$-tic, kde $m$ odpovídá maximálně $\frac{3\cdot 2^{\log_{2}(n)-k}}{2^{k}}$, kde $n$ je počet budov (počet trojic). $m$ jsem odvodil tak, že v nejspodnějším patře spojuji trojice, každé vyšší patro délku $m$-tice maximálně zdvojnásobí. Po úpravě a roznásobení získáme hodnotu $3n$, která odpovídá maximálnímu počtu operací (zanedbáváme konstantní počet operací porovnání) na každé úrovni zanoření rekurze. To tedy spolu s $\log_{2}(n)$ počty zanoření dává $\mathcal{O}(n\cdot\log(n))$
+\end{document}

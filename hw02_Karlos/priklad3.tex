@@ -1,0 +1,74 @@
+\documentclass[12pt]{iv003}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage[czech]{babel}
+\usepackage{amsmath, amsthm}
+\usepackage{enumerate}
+
+%% algoritmy
+%{{{ Latex definitions
+% ALGORITHM typesetting
+\usepackage[noline,boxruled,longend,linesnumbered,czech]{algorithm2e}
+%\SetKwInOut{Input}{vstup}\SetKwInOut{Output}{výstup}
+\SetKwInput{Input}{vstup}
+\SetKwInput{Output}{výstup}
+\newcommand{\donothing}[1]{#1}
+\SetArgSty{donothing}
+\SetCommentSty{emph}
+%\IncMargin{1em}
+%\setlength{\algomargin}{1em}
+\DontPrintSemicolon
+\SetKwIF{If}{ElseIf}{Else}{if}{then}{else if}{else}{fi}
+\SetKwFor{For}{for}{do}{od}
+\SetKwFor{While}{while}{do}{od}
+\SetFuncSty{textsc} \SetProcNameSty{textsc}
+
+% hack to set the correct width of the algorithm
+\usepackage{xpatch}
+\xpretocmd{\algorithm}{\hsize=\linewidth}{}{}
+\xpretocmd{\function}{\hsize=\linewidth}{}{}
+\xpretocmd{\procedure}{\hsize=\linewidth}{}{}
+%%/algoritmy
+
+%%% ZDE SADA, UKOL CISLO X, JMENO, UCO
+\setexercise{2}
+\setassignment{4}
+\setstudenta{Karel Kubíček}
+\setucoa{408351}
+\setstudentb{Henrich Lauko}
+\setucob{410438}
+
+\begin{document}
+Algoritmus pro zpřehlednění pracuje s globálním polem $Array$, které má délku zadaného textu, kterou si také pamatujeme v proměnné $n$. Pole z počátku obsahuje hodnoty \textsc{Nil} a je indexováno od 1 do $n$.
+\SetKwFunction{ffdict}{Dict}
+
+{\small \begin{procedure}[H]
+\SetKwFunction{ffwords}{Words}
+    \caption{Words($string$) }
+    \Input{část vstupního textu $string$, při prvním volání odpovídá délce $n$}
+    \Output{boolovská hodnota, zdali lze vstup rozdělit mezerami tak, aby byl složen ze slov zadaného slovníku}
+    \uIf{\ffdict($string$)}{
+		\Return{\textsc{True}} \tcp{celý $string$ je slovo}
+    }
+    \For{$i = n$ \KwDownTo $n-|string|$}{
+		\uIf{$Array[i] = $ \textsc{Nil}}{
+			$Array[i] \leftarrow $ \ffwords($string[i,n]$) \tcp{hodnotu jsem ještě nepočítal, v rekurzi ji spočítám poprvé a uložím}
+		}
+		\uIf{\ffdict($string[0,i-1]) \wedge Array[i] = $ \textsc{True}}{
+			\Return{\textsc{True}} \tcp{$string[0,i-1]$ je ve slovníku a zbytek lze také rozdělit, což víme z rekurze}
+		}
+    }
+    \Return{\textsc{False}} \tcp{$string$ nelze rozložit}
+\end{procedure}}
+\paragraph{Popis algoritmu:} tento rekurzivní algoritmus využívá dynamického programování k řešení problému s exponenciálním množstvím podproblému pomocí memoizace. Algoritmus prochází zadaný řetězec odzadu, začneme posledním písmenem, pak dvěma až po celé slovo. Na tomto podřetězci se volá rekurzivně algoritmus znovu, abychom se vyhnuli exponenciálnímu počtu volání, tak si již vyřešené podproblémy pamatujeme v pomocném poli. Procedura vrací návratovou hodnotu \textsc{True} v případě, že rozdělený řetězec v první části obsahuje slovo a zbytek je podle dat získaných z rekurze a uložených v poli také rozdělitelný na slova. Pokud toto nesplňuje a ani celý řetězec není slovem, pak se vrací \textsc{False}, což je buďto použito pro uložení v poli, nebo v případě prvního volání jako návratová hodnota celé procedury.
+\paragraph{Korektnost:} algoritmus je korektní, pokud je parciálně korektní a pro všechny vstupy splňující vstupní podmínku skončí. Vstupní podmínku nemáme zadáním definovanou (pokud nějakou používá funkce \ffdict, pak ji náš algoritmus musí splňovat též). Parciální korektností rozumíme, že výstup splňuje výstupní podmínku, tedy zdali algoritmus správně rozeznal, zdali lze řetězec rozdělit na slova.\\
+Pro vstup, který lze rozdělit mezerami existuje posloupnost indexů, které vstupní řetězec dělí. Náš algoritmus by v podobě bez memoizace prošel všechny možné kombinace slov, které lze z řetězce získat, takže by musel řešení najít. Musíme ještě dokázat, že memoizace nás nepřipraví o žádné informace. Trochu neintuitivní je, zdali nemůžeme daný řetězec rozdělit tak, abychom vzali něco, co jsme zahrnuli do memoizace, ve které je třeba informace, že tento podřetězec rozložit nejde. Nicméně k tomuto je v algoritmu přítomen for cyklus, který zkusí všechny prefixy, přičemž uložené informace využíváme až na sufixy. Tudíž stále vyzkoušíme všechny možné kombinace rozdělení a k řešení se dostaneme.\\
+K výstupu \textsc{False} se můžeme dostat jedině v případě, že všechny možné rozdělení projdeme. V pomocném poli můžou i v takovém případě vyjít na některých pozicích hodnoty \textsc{True}, nicméně k těmto hodnotám podslovům neexistuje takový prefix, který by se ze slov skládal.
+\paragraph{Asymptotická časová složitost} algoritmu patří do třídy $\mathcal{O}(n^{2})$ a algoritmus má navíc lineární paměťové nároky. Zatímco paměťová složitost je jasná, důvod proč je časová složitost polynomiální nemusí být zcela jasný. Je zřejmé, že for cyklus provede $\mathcal{O}(n)$ průběhů, kde nekonstantní složitost má jen rekurzivní volání. Díky memoizaci a postupu od konce se však rekurzivní volání může volat maximálně do hloubky 1. To je zajištěno tím, že rekurze se volá nejdříve u podřetězce délky 2, a až potom u podřetězce délky 3. Obecně tedy platí, že v případě volání podřetězce délky $i+1$ už máme všechny podřetězce délky maximálně $i$ vyřešené a uložené v poli. Rekurze se tedy zavolá maximálně $n$-krát, což lze jednoduše dokázat tím, že každým voláním rekurze vyplníme jeden prvek pomocného pole, které má délku $n$. Lineární počet rekurzivních zanoření a počet průběhů ve for cyklu odpovídající délce řetězce nám dává Gaussův vzorec pro sumu čísel od 1 do $n$, kde je převládající kvadratický člen.
+\end{document}
+
+
+
+
+

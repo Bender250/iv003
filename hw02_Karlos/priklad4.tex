@@ -1,0 +1,83 @@
+\documentclass[12pt]{iv003}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage[czech]{babel}
+\usepackage{amsmath, amsthm}
+\usepackage{enumerate}
+
+%% algoritmy
+%{{{ Latex definitions
+% ALGORITHM typesetting
+\usepackage[noline,boxruled,longend,linesnumbered,czech]{algorithm2e}
+%\SetKwInOut{Input}{vstup}\SetKwInOut{Output}{výstup}
+\SetKwInput{Input}{vstup}
+\SetKwInput{Output}{výstup}
+\newcommand{\donothing}[1]{#1}
+\SetArgSty{donothing}
+\SetCommentSty{emph}
+%\IncMargin{1em}
+%\setlength{\algomargin}{1em}
+\DontPrintSemicolon
+\SetKwIF{If}{ElseIf}{Else}{if}{then}{else if}{else}{fi}
+\SetKwFor{For}{for}{do}{od}
+\SetKwFor{While}{while}{do}{od}
+\SetFuncSty{textsc} \SetProcNameSty{textsc}
+
+% hack to set the correct width of the algorithm
+\usepackage{xpatch}
+\xpretocmd{\algorithm}{\hsize=\linewidth}{}{}
+\xpretocmd{\function}{\hsize=\linewidth}{}{}
+\xpretocmd{\procedure}{\hsize=\linewidth}{}{}
+%%/algoritmy
+
+%%% ZDE SADA, UKOL CISLO X, JMENO, UCO
+\setexercise{2}
+\setassignment{4}
+\setstudenta{Karel Kubíček}
+\setucoa{408351}
+\setstudentb{Henrich Lauko}
+\setucob{410438}
+
+\begin{document}
+Algoritmus pro zpřehlednění pracuje s globální 3D maticí $Matrix$, která má rozměry $\frac{n}{3}+1 \times \frac{n}{3}+1 \times \frac{n}{3}+1$. Každé políčko matice obsahuje hodnotu maximální ceny z nákupu prvních $x$ aut v prvním autosalóně, $y$ v druhém a $z$ ve třetím autosalóně. Kromě toho také obsahuje flag, který popisuje, z kterého směru jsme se na danou pozici dostali. Za okraji této matice se nachází hodnoty 0, obdobně se nula nachází v $C[0][i]$.
+
+\SetKwFunction{ffmax}{Max}
+
+{\small \begin{procedure}[H]
+\SetKwFunction{ffoptimalprize}{OptimalPrize}
+    \caption{OptimalPrize($C$) }
+    \Input{$C$, je matice vyjadřující cenu}
+    \Output{uspořádaná $n$-tice, popisující které auta kam prodat za maximální cenu}
+    $Matrix[0][0][0] \leftarrow 0$ \tcp{$0$ aut prodáme za cenu $0$}
+    \For{$x \leftarrow 0$ \KwTo  $\frac{n}{3}$}{
+		\For{$y \leftarrow 0$ \KwTo  $\frac{n}{3}$} {
+			\For{$z \leftarrow 0$ \KwTo  $\frac{n}{3}$} {
+				$prizeX \leftarrow Matrix[x-1][y][z] + C[x+y+z][1]$ \;
+				$prizeY \leftarrow Matrix[x][y-1][z] + C[x+y+z][2]$ \;
+				$prizeZ \leftarrow Matrix[x][y][z-1] + C[x+y+z][3]$ \;
+				$Matrix[x][y][z] \leftarrow $ \ffmax($prizeX, prizeY, prizeZ$) \tcp{\ffmax vrátí kromě maxima i flag odpovídající směru, ze kterého bylo maximum vybráno}
+			}
+		}
+    }
+    $Output \leftarrow $ prázdné pole délky $n$ \;
+    $car \leftarrow Matrix[\frac{n}{3}][\frac{n}{3}][\frac{n}{3}]$ \;
+    \For{$i \leftarrow n$ \KwDownTo $1$} {
+		$Output[i] \leftarrow car.flag$ \tcp{flag určuje který autosalón jsme pro auto použili}
+		$car \leftarrow car.prev()$ \tcp{na základě flagu vrátí danou pozici v $Matrix$}
+    }
+    \Return{$Output$}
+\end{procedure}}
+\paragraph{Popis algoritmu:} algoritmus v každé iteraci spočítá jedno políčko matice $Matrix$, přičemž to je vybráno jako maximum okolních hodnot plus auto které aktuálně prodáváme v jakém autosalonu, což odpovídá směru, ve kterém jsme se v matici posunuli ($x$ je první autosalón, $y$ druhý a $z$ třetí). Využili jsme memoizace, což je prostředek dynamického programování, abychom nemuseli vypočtené hodnoty opakovaně počítat.\\
+For cyklus počínající na 14. řádku nám pomocí uložených flagů nalezne, kudy k výslednému řešení vedla cesta.\\
+Funkce $prev$ na základě flagu vrací přecházející prvek v matici podle směru $x$, $y$, $z$ (pro flag $x$ vrací ukazatel na prvek $Matrix[x-1][y][z]$, obdobně pro ostatní flagy).
+\paragraph{Korektnost:} algoritmus je totálně korektní, pokud je konečný a parciálně korektní, což znamená výstup splňuje výstupní podmínku, kterou je v našem případě, že nalezená $n$-tice odpovídá řešení s maximální cenou, za kterou lze auta prodat. $n$-tice musí obsahovat od každého autosalónu stejný počet aut, což je zajištěno rozměry matice. Konečnost algoritmu je zřejmá, jelikož používáme jen for cykly a hodnoty v nich jen inkrementujeme.\\
+Parciální korektnost lze dokázat indukcí. Pro 0 aut vybereme cenu 0. Induktivním předpokladem je, že pro $k$ aut vybereme cenu $p$, která je nejlepší možná. Při přidání dalšího auta dostaneme 2 různé možnosti.\\
+\begin{enumerate}
+	\item původní maximální cesta je součástí nové maximální cesty. Pak jen auto zařadíme do autosalónu, který nabízí největší cenu za nové auto.
+	\item původní maximální cena není součástí správného řešení pro $k+1$ aut. Pak musíme někde v průběhu výpočtu přejít do o jedna větší souřadnice, než byl rozsah původního řešení. Pak už v této souřadnici nesmíme dále pokračovat, abychom neporušili rovnoměrnou distribuci.
+\end{enumerate}
+Rozdíl počtu prodaných aut do autosalónu o 1 nepovažujeme za porušení rovnoměrnosti distribuce.\\
+Jelikož je algoritmus konečný a parciálně korektní, pak je nutně i korektní.
+\paragraph{Asymptotická časová složitost} je $\in \mathcal{O}(n^{3})$, for cykly mají daný rozsah ($\frac{n}{3}$) a indexy se každým průchodem zvyšují o 1. Vyhodnocení maxima je provedeno v konstantním čase. Závěrečný for cyklus má jen lineární složitost, asymptotickou složitost tedy nemění.
+\end{document}

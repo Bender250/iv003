@@ -1,0 +1,91 @@
+\documentclass[12pt]{iv003}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage[czech]{babel}
+\usepackage{amsmath, amsthm}
+\usepackage{enumerate}
+
+%% algoritmy
+%{{{ Latex definitions
+% ALGORITHM typesetting
+\usepackage[noline,boxruled,longend,linesnumbered,czech]{algorithm2e}
+%\SetKwInOut{Input}{vstup}\SetKwInOut{Output}{výstup}
+\SetKwInput{Input}{vstup}
+\SetKwInput{Output}{výstup}
+\newcommand{\donothing}[1]{#1}
+\SetArgSty{donothing}
+\SetCommentSty{emph}
+%\IncMargin{1em}
+%\setlength{\algomargin}{1em}
+\DontPrintSemicolon
+\SetKwIF{If}{ElseIf}{Else}{if}{then}{else if}{else}{fi}
+\SetKwFor{For}{for}{do}{od}
+\SetKwFor{While}{while}{do}{od}
+\SetFuncSty{textsc} \SetProcNameSty{textsc}
+
+% hack to set the correct width of the algorithm
+\usepackage{xpatch}
+\xpretocmd{\algorithm}{\hsize=\linewidth}{}{}
+\xpretocmd{\function}{\hsize=\linewidth}{}{}
+\xpretocmd{\procedure}{\hsize=\linewidth}{}{}
+%%/algoritmy
+
+%%% ZDE SADA, UKOL CISLO X, JMENO, UCO
+\setexercise{3}
+\setassignment{2}
+\setstudenta{Karel Kubíček}
+\setucoa{408351}
+\setstudentb{Martin Hanžl}
+\setucob{410497}
+
+\begin{document}
+
+\SetKwFunction{fftopologicalSort}{topologicalSort}
+\SetKwFunction{ffmax}{max}
+
+\paragraph{Popis algoritmu:} pro konstrukci tohoto algoritmu jsme využili principu dynamického programování. Konkrétně místo opakovaného počítání výsledků v rekurzi si mezivýsledky pamatujeme pomocí memoizace. K tomu nám složí matice rozměrů $(|z| + 1) \times (|z| + 1)$, na pozici $[i,j]$ uchovává boolovskou hodnotu, vyjadřující, zdali se z $i$ znaků repretice $x$ a $j$ symbolů repetice $y$ dá vytvořit spojení $x$ a $y$.\\
+Matice je schodovitá, výstup funkce záleží na hodnotách na diagonále, což jsou body se vzdáleností odpovídající celému slovu $z$, kde cesta maticí popisuje, jak spojení vypadá.\\
+Matici číslujeme od 0, zatímco pozici ve slovech od -1.\\
+
+{\small \begin{procedure}[H]
+\SetKwFunction{ffisconnection}{isConnection}
+	\caption{isConnection($x, y, z$)}
+	\Input{o slovu $z$, zjišťujeme, zdali je spojením slov $x$ a $y$}
+	\Output{boolovská hodnota, zdali $z$ je spojením $x$ a $y$}
+	\tcp{matice pro memoizaci}
+	$matrix \leftarrow $ matice $(|z| + 1) \times (|z| + 1)$ \;
+	$matrix[0][0] \leftarrow $ \textsc{True} \tcp{prázdné slovo z $x$ a $y$ umíme vytvořit}
+	\tcp{inicializace okraje matice, tedy pro slova, které jsou jen repeticí jednoho ze slov}
+	\For{$i \leftarrow 1$ \KwTo $|z|$}{
+			$matrix[0][i] \leftarrow$ $(matrix[0][i - 1] \wedge x_{i - 1 \mod |x|} = z_{i - 1})$ \tcp{přechod pod slovem $x$}
+			$matrix[i][0] \leftarrow$ $(matrix[i -1][0] \wedge y_{i - 1 \mod |y|} = z_{i - 1})$ \tcp{přechod pod slovem $y$}
+	}
+	\If{$matrix[0][|z|] \vee matrix[|z|][0]$}{
+		\Return{\textsc{True}} \tcp{z je repeticí jen jednoho slova}
+	}
+	\tcp{memoizace}
+	\For{$i \leftarrow 1$ \KwTo $|z|$} {
+		\For{$j \leftarrow 1$ \KwTo $|z|-i$} { %+1 ne?
+			\uIf{$(matrix[i][j - 1] \wedge x_{j - 1 \mod |x|} = z_{i + j - 1})$}{
+				$matrix[i][j] \leftarrow$ \textsc{True} \tcp{existuje přechod pod aktuálním znakem ze slova $x$}
+			}\uElseIf{$(matrix[i - 1][j] \wedge y_{i - 1 \mod |y|} = z_{i + j - 1})$}{
+				$matrix[i][j] \leftarrow$ \textsc{True} \tcp{existuje přechod pod aktuálním znakem ze slova $y$}
+			}\uElse{
+				$matrix[i][j] \leftarrow$ \textsc{False} \tcp{neexistuje přechod pod žádným znakem}
+			}
+		}
+		\uIf{$matrix[i][|z|-i]$} {
+			\Return{\textsc{True}}
+		}
+	}
+	\Return{\textsc{False}}
+\end{procedure}}
+\paragraph{Asymptotická časová složitost:} inicializace matice $(|z| + 1) \times (|z| + 1)$ je v $\mathcal{O}|z|^{2}$. První for cyklus prochází znovu délku slova $z$. Až 2 zanořené for cykly od řádku 10 jsou zase v kvadratickém čase. Celkově je tedy složitost kvadratická.
+\paragraph{Korektnost:} Algoritmus je korektní, pokud na vstupech splňujících vstupní podmínku skončí a zároveň je parciálně korektní.\\
+Konečnost algoritmu je implikována použitím pouze for cyklů, které iterují nad délkou slova $z$. Jelikož se proměnné těchto for cyklů mění jen ve forcyklech a to vždy vzhůru, algoritmus se nemá kde zacyklit a skončí.\\
+Parciální korektnost dokážeme indukcí přes obsah matice.\\
+Pro indexy $[0,0]$ je zřejmé, že prázdné slovo z $x$ a $y$ poskládat lze.
+Očekávejme, že algoritmus platí pro slovo délky $k$, pak algoritmus platí i pro slovo délky $k+1$. Z indukčního předpokladu víme, že máme napočítanou matici po diagonálu ve vzdálenosti $k$ od $[0,0]$. Na této diagonále jsou informace o možnosti složit slovo délky $k$. Tuto matici můžeme výpočtem doplnit o novou diagonálu ve vzdálenosti $k+1$. Pozici v nové diagonále určíme podle levé a dolní pozice. V případě, že jsou obě \textsc{False}, pak ani nová pozice nemůže být \textsc{True}, což odpovídá tomu, že jakmile nejsme schopni spojit nějaká slova, pak nejsme schopni spojit ani jejich slova prodloužené o nějaký symbol. V případě alespoň jednoho z levého, nebo dolního souseda s hodnotou \textsc{True} chceme do slova vzniklého spojením přidat znak, který odpovídá $n$-tému znaku v repetici slova, ze kterého vybíráme. To je dáno pohybem v matici, pohyb doprava znamená výběr znaku ze repetice slova $x$ a obdobně pro $y$. Pokud další přidaný znak odpovídá $k+1$. symbolu slova $z$, pak přiřadíme na zkoumanou pozici v matici hodnotu \textsc{True}. Algoritmus je tedy korektní
+
+\end{document}

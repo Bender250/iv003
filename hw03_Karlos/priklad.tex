@@ -1,0 +1,127 @@
+\documentclass[12pt]{iv003}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage[czech]{babel}
+\usepackage{amsmath, amsthm}
+\usepackage{enumerate}
+
+%% algoritmy
+%{{{ Latex definitions
+% ALGORITHM typesetting
+\usepackage[noline,boxruled,longend,linesnumbered,czech]{algorithm2e}
+%\SetKwInOut{Input}{vstup}\SetKwInOut{Output}{výstup}
+\SetKwInput{Input}{vstup}
+\SetKwInput{Output}{výstup}
+\newcommand{\donothing}[1]{#1}
+\SetArgSty{donothing}
+\SetCommentSty{emph}
+%\IncMargin{1em}
+%\setlength{\algomargin}{1em}
+\DontPrintSemicolon
+\SetKwIF{If}{ElseIf}{Else}{if}{then}{else if}{else}{fi}
+\SetKwFor{For}{for}{do}{od}
+\SetKwFor{While}{while}{do}{od}
+\SetFuncSty{textsc} \SetProcNameSty{textsc}
+
+% hack to set the correct width of the algorithm
+\usepackage{xpatch}
+\xpretocmd{\algorithm}{\hsize=\linewidth}{}{}
+\xpretocmd{\function}{\hsize=\linewidth}{}{}
+\xpretocmd{\procedure}{\hsize=\linewidth}{}{}
+%%/algoritmy
+
+%%% ZDE SADA, UKOL CISLO X, JMENO, UCO
+\setexercise{3}
+\setassignment{1}
+\setstudenta{Karel Kubíček}
+\setucoa{408351}
+\setstudentb{Henrich Lauko}
+\setucob{410438}
+
+
+\SetKwFunction{fftopologicalSort}{topologicalSort}
+\SetKwFunction{ffmax}{max}
+\SetKwFunction{ffmaxI}{maxI}
+\SetKwFunction{ffmaxII}{maxII}
+
+\begin{document}
+\paragraph{Popis algoritmu:} algoritmus podle nápovědy využívá dynamické programování a průchod do hloubky. Průchodu do hloubky je využito v topologickém řazení, algoritmus je popsán ve slidech k IB002 (slidy 9-10, strana 32). Pro naše potřeby otáčíme pořadí výsledného uspořádání, do seznamu uzlů vkládáme uzel od konce a vkládáme při ukončení jeho průzkumu.\\
+Potom ještě před první vrchol přidáme nový počáteční vrchol, abychom neměli více počátečních vrcholů.\\
+Prvkem dynamického programování je memoizace, ke které používáme matici velikosti $|x| \times |y|$ (už prodloužené seznamy vrcholů o počáteční vrchol). V této matici si budeme pamatovat délky nejdelší sekvence, osa $x$ bude připadat topologicky uspořádaným vrcholům $x$, osa $y$ pro vrcholy $y$. Na souřadnici $[i,j]$ uchováváme informaci o délce nejdelší společné sekvence pro dvojici $i$-tého vrcholu z $x$ a $j$-tého vrcholu z $y$. Na začátku víme, že nejdelší společná sekvence dvou předřazených vrcholů je 0. Výsledná délka nejdelší sekvence je největší číslo v matici, nalezení sekvence provedeme pomocí backtrackingu do počátečního uzlu. Matici indexuji od 1.\\
+For cykly v kódu tedy iterují přes všechny vrcholy obou grafů, důležité je následně porovnat, zdali vrcholy mají stejný klíč, což nám výrazně rozlišuje chování. V případě různého klíče musíme jen najít maximum v předchůdcích, první volání funkce \ffmax tedy obsahuje for cyklus, který iteruje přes všechny předchůdce jak vrcholu $y$ (hledáme dvojici právě zpracovávaného $i$-tého vrcholu z $x$ a předchůdce $j$-tého vrcholu z $y$). Obdobně vypadá hledání maxima z dvojic předchůdce $x[i]$ a vrcholu $y[j]$. Pro snazší hledání předchůdců si můžeme třeba vytvořit inverzní graf, což lze provést v lineárním čase vzhledem k součtu počtu vrcholů a hran. Na konci tohoto bloku vybereme větší ze dvou maxim a to přiřadíme na aktuální pozici v matici.
+Zajímavější je případ, kdy se klíče rovnají. To znamená, že budeme zvyšovat délku sekvence o jedna, ale vůči čemu? Musíme projít všechny dvojice předchůdců, což je až kvadratické množství dvojic (provedeno dvojicí vnořených for cyklů iterujících přes všechny předchůdce). Z těchto dvojic (tedy souřadnic v matici) musíme najít maximum, což zvýšeno o jedna ukládáme na aktuální pozici v matici. Důvodem hledání v kartézském součinu předchůdců je, že prodlužováním sekvence ji měníme, zatímco v případě nerovnosti k sekvenci jen přidáme další vrchol.
+Výstupem algoritmu je maximální hodnota v matici, kterou najdeme dalším vyhledáním maxima. Alternativně by se dal algoritmus upravit tak, aby maximum vždy bylo v pravém horním rohu matice a to tak, že bychom za všechny konce v topologicky uspořádaném grafy přiřadili nový konečný vrchol, ve kterém by nutně všechny sekvence končili.
+
+\begin{procedure}[H]
+\SetKwFunction{fffindLongestSequence}{findLongestSequence}
+	\caption{findLongestSequence($x, y$) }
+	\Input{$x$ a $y$ jsou acyklické orientované grafy zadané polem indexovaným od 0 a s klíčem $key$}
+	\Output{nejdelší sekvence}
+	\fftopologicalSort($x$) \tcp{uspořádáme topologicky $x$ a $y$ od nejnižších k nejvyšším uzlům}
+	\fftopologicalSort($y$) \;
+	do grafů $x$ a $y$ vložíme vrchol $\epsilon$, ze kterého vede hrana do všech počátečních vrcholů, tento vrchol do výsledné sekvence nepočítáme, ačkoliv to v pseudokódu není ošetřeno \;
+	$m \leftarrow $ vynulovaná matice rozměrů $|x| \times |y|$ \;
+	\For{$i = 1$ \KwTo $|x|$} {
+		\For{$j = 1$ \KwTo $|y|$} {
+			\eIf{$x[i].key \not= y[j].key$} {
+				\tcp{porovnání $i$-tého znaku z grafu $x$ a $j$-tého z grafu $y$}
+				$m1 \leftarrow $ \ffmaxI($m[i, y[j].predeccessors$) \tcp{projde $m$ ve sloupci $i$ a vyhledá max mezi předůdci}
+				$m2 \leftarrow $ \ffmaxI($m[x[i].predeccessors, j$) \tcp{projde $m$ na řádku $j$ a vyhledá max mezi předůdci}
+				$m[i,j] \leftarrow $ \ffmax$(m1, m2)$ \;
+			} {
+				$m[i,j] \leftarrow $ \ffmaxII($m[x[i].predeccessors, y[j].predeccessors$) + 1 \tcp{projde všechny pozice $m$ které odpovídají indexům předchůdců}
+			}
+		}
+	}
+	%todo backtrack
+	\Return(backtrack v $m$)
+\end{procedure}
+
+\begin{procedure}[H]
+\SetKwFunction{ffmaxI}{maxI}
+	\caption{maxI($y, m, i, j$) }
+	\Input{Graf $y$ (v prvním případě), pozice $i$, $j$ a matice memoizace $m$}
+	\Output{maximum z dvojic vrcholu $i$ a předchůdců $j$}
+	$maxIndex \leftarrow Nil$ \;
+	$maxValue \leftarrow \infty$ \;
+	\For{$(v,j) \in y$} { 
+		\uIf{$m[i,v] > maxValue$} {
+			$maxIndex \leftarrow v$ \;
+			$maxValue \leftarrow m[i,v]$ \;
+		}
+	}
+	\Return($maxValue$)
+\end{procedure}
+
+Symetricky pro předchůdce v $x$.
+
+
+\begin{procedure}[H]
+\SetKwFunction{ffmaxII}{maxII}
+	\caption{maxII($x, y, m, i, j$) }
+	\Input{Grafy $y$ a $x$, pozice $i$, $j$ a matice memoizace $m$}
+	\Output{maximum z dvojic předchůdců vrcholu $i$ a $j$}
+	$maxPosotion \leftarrow Nil$ \;
+	$maxValue \leftarrow \infty$ \;
+	\For{$(u,i) \in x$} { 
+		\For{$(v,j) \in y$} { 
+			\uIf{$m[u,v] > maxValue$} {
+				$maxPosition \leftarrow v$ \;
+				$maxValue \leftarrow m[i,v]$ \;
+			}
+		}
+	}
+	\Return($maxValue$)
+\end{procedure}
+
+\paragraph{Korektnost:} u korektnosti topologického řazení se odkážu na slidy, ze kterých jsem algoritmus čerpal, kde je korektnost popsána stručně na slidu 32, budu tedy popisovat jen korektnost dalších řádků.\\
+Algoritmus je korektní, pokud na vstupech splňujících vstupní podmínku skončí a zároveň je parciálně korektní.\\
+Konečnost algoritmu je dána použitím for cyklů iterujících přes konečný počet vrcholů.\\
+Parciální korektnost algoritmu provedeme pomocí indukce (na následníky). Pro dvojici předřazených vrcholů grafů, tedy pozici v matici $m[1,1]$ je nejdelší společná sekvence 0.\\
+Předpokládejme, že algoritmus napočítá korektní délku nejdelší sekvence pro vrcholy na pozicích $k$ z $x$ a $l$ z $y$. Pak algoritmus platí pro následníky $k$ a $l$.\\
+Pro všechny dvojice (následník $k$, $l$) a ($k$, následník $l$) provedeme kontrolu, zdali nejdelší společná sekvence $k$ a $l$ je nejdelší. V případě že je, pak prodloužením zpracované části grafu o jeden vrchol nic nezmění, protože prodlužujeme pouze jeden graf, což nový symbol do sekvence přidat nemůže. Na další pozici tedy uložíme hodnotu $m[i,j]$.\\
+Pro všechny dvojice (následník $k$, následník $l$) provedeme kontrolu, zdali nejdelší společná sekvence $k$ a $l$ je nejdelší. V případě že je, pak ještě porovnáme, zdali následníci nemají stejný klíč. Pokud ano, pak se nám sekvence o jedna prodlouží a do nové pozice v matici uložíme hodnotu $m[i,j]+1$.
+
+\paragraph{Asymptotická časová složitost:} složitost \fftopologicalSort je stejně jako u DFS $\mathcal{O}(|V|+|E|)$. Složitost pro vytvoření inverzních grafů pro hledání předchůdce vrcholu také. Ve dvou for cyklech iterujících přes všechny vrcholy máme hledání maxima. To je v prvním případě lineární složitosti vzhledem k počtu vrcholů obou grafů, v druhé však počet vrcholů v grafech nesčítáme, ale násobíme (kartézský součin). Asymptoticky tedy převládá kvadrát v hledání maxima v případě rovnosti klíčů, což při $n \cdot m$ volání ve for cyklech znamená celkovou složitost $\mathcal{O}(|x|^{2}\cdot|y|^{2}) = \mathcal{O}(n^{4})$.
+\end{document}
