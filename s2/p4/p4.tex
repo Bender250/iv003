@@ -1,0 +1,59 @@
+\documentclass[12pt]{iv003}
+
+% BASIC packages
+\usepackage[utf8]{inputenc}
+\usepackage[czech]{babel}
+\usepackage[T1]{fontenc}
+\usepackage{microtype}
+\usepackage{lmodern}
+%\usepackage[margin=1in]{geometry}
+\usepackage{amssymb}
+\usepackage{ifthen}
+\usepackage[all]{xy}
+\usepackage{fancyvrb}
+\usepackage{enumerate}
+\usepackage{verbatim}
+\usepackage{pdfpages}
+\usepackage{amsmath}
+
+\usepackage{pgfplots}
+
+% ALGORITHM typesetting
+\usepackage[noline,boxruled,longend,linesnumbered,czech]{algorithm2e}
+\SetKwInput{Input}{vstup}
+\SetKwInput{Output}{výstup}
+\newcommand{\donothing}[1]{#1}
+\SetArgSty{donothing}
+\SetCommentSty{emph}
+\DontPrintSemicolon
+\SetKwIF{If}{ElseIf}{Else}{if}{then}{else if}{else}{fi}
+\SetKwFor{For}{for}{do}{od}
+\SetKwFor{While}{while}{do}{od}
+\SetKwFor{Foreach}{foreach}{do}{od}
+
+\usepackage{xpatch}
+\xpretocmd{\algorithm}{\hsize=\linewidth}{}{}
+\xpretocmd{\function}{\hsize=\linewidth}{}{}
+\xpretocmd{\procedure}{\hsize=\linewidth}{}{}
+
+%%Set variables
+\setassignment{2}
+\setexercise{4}
+
+\setstudentI{Henrich Lauko}
+\setucoI{410438}
+
+\setstudentII{Karel Kubíček}
+\setucoII{408351}
+
+\begin{document}
+
+Problém si môžeme zapísať nasledovnou rekurzívnou rovnicou kde $k_{i}$ označuje kapacitu $i$-teho autosalónu, na počiatku s hodnotou $k_{i} = |A|/3$, kde $A$ je množina áut.\\
+$O(\emptyset,k_{1},k_{2},k_{3}) = 0$\\
+$O(A,k_{1},k_{2},k_{3}) = max(O(A - A.last,k_{1} - 1,k_{2},k_{3}) + C[last,1],O(A - A.last,k_{1},k_{2}-1,k_{3}) +C[last,2],O(A - A.last,k_{1},k_{2},k_{3} - 1) + C[last,3])$\\
+
+
+
+
+\end{document}
+

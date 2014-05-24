@@ -1,0 +1,143 @@
+\documentclass[12pt]{iv003}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage[czech]{babel}
+\usepackage{amsmath, amsthm}
+\usepackage{enumerate}
+
+%% algoritmy
+%{{{ Latex definitions
+% ALGORITHM typesetting
+\usepackage[noline,boxruled,longend,linesnumbered,czech]{algorithm2e}
+%\SetKwInOut{Input}{vstup}\SetKwInOut{Output}{výstup}
+\SetKwInput{Input}{vstup}
+\SetKwInput{Output}{výstup}
+\newcommand{\donothing}[1]{#1}
+\SetArgSty{donothing}
+\SetCommentSty{emph}
+%\IncMargin{1em}
+%\setlength{\algomargin}{1em}
+\DontPrintSemicolon
+\SetKwIF{If}{ElseIf}{Else}{if}{then}{else if}{else}{fi}
+\SetKwFor{For}{for}{do}{od}
+\SetKwFor{While}{while}{do}{od}
+\SetFuncSty{textsc} \SetProcNameSty{textsc}
+
+% hack to set the correct width of the algorithm
+\usepackage{xpatch}
+\xpretocmd{\algorithm}{\hsize=\linewidth}{}{}
+\xpretocmd{\function}{\hsize=\linewidth}{}{}
+\xpretocmd{\procedure}{\hsize=\linewidth}{}{}
+%%/algoritmy
+
+%%% ZDE SADA, UKOL CISLO X, JMENO, UCO
+\setexercise{3}
+\setassignment{3}
+\setstudenta{Jiří Novotný}
+\setucoa{409963}
+\setstudentb{Henrich Lauko}
+\setucob{410438}
+
+\begin{document}
+a) Algoritmus pre odstránenie vrcholu z grafu tak, aby sa nezmenili vzdialenosti ostatných vrcholov pracuje na princípe prelinkovania vchádzajucich hrán do a z vrcholu~$v$.
+
+\begin{algorithm}[H]
+	\caption{\textsc{RemoveVertex}($G, v$)}
+	\Input{graf $G = (V,E)$ obsahujúci odoberaný vrchol $v$}
+	\Output{graf $G'$, ktorý neobsahuje vrchol  $v$, nezmenenými najkračšími vzdialenosťami}
+	$E' \leftarrow \emptyset$\;
+	$V' \leftarrow V \backslash \{v\}$\;
+	\ForEach{$i \in V'$}{
+		\ForEach{$j \in V'$}{
+			$value \leftarrow min\{E(i,j); E(i,v) + E(v,j) \}$\tcp{neexistujúca hrana má hodnotu~$\infty$}
+			\If{$value \neq \infty$}{
+				$E'$ addEdge ($i, j, value$)\tcp{prida hranu s hodnotou value}
+			}
+		}
+	}
+	\Return $G' = (E',V')$
+\end{algorithm}
+
+\paragraph{Časová zložitosť}
+Časová zložitosť algoritmu je $\mathcal{O}(|V'^{2}|)$, keďže v algoritme iterujeme dvoma zanorenými cyklami cez množinu vrcholov $V'$, v tele cyklu sa indexy nemenia a operácie vnútri cyklov su konštantné, teda časová zložitosť cyklov je $\mathcal{O}(|V'|) \cdot \mathcal{O}(|V'|) = \mathcal{O}(|V'^{2}|)$. Pri inicializácii kopírujem množinu $V$ do $V'$ čo je vykonané v lineárnom čase, číže to časovú zložitosť nezhorší.
+
+\paragraph{Korektnosť}
+Odobratie vrchulo $v$ mohlo narúšiť jedine dĺžky najkratších ciest na ktorých sa vrchol $v$ nachádzal. Čo môžeme reprezentovať tak, že existuje nejaká cesta medzi $(a,b)$ v pôvodnom grafe $G$, môžu nastať dva prípady:
+\begin{enumerate}
+	\item $v$ sa na najkratšéj ceste nachádza v tom prípade existuje taká dvojica vrcholov $(i,j)$, kde $i$ je predchodca $v$ na najktratšej ceste $(a,b)$ a $j$ je jeho následnik v tom prípade do grafu $G'$ pridáme hranu $(i,j) = (i,v) + (v,j)$, teda najkratšia cesta sa nezmení
+	\item $v$ sa na najkratšej ceste nenachádza teda hrany $(i,v)$ a $(v,j)$ nepoškodia najkratšie cesty a rátame pôvodnú hranu medzi $(i,j)$
+\end{enumerate}
+Keďže algoritmus pri prechode cyklov prechádza konečne veľkú množinu vrcholov je aj konečný, teda je aj korektný.\\
+
+b) Algoritmus pre hľadanie najkratších ciest z a do vrcholu $v$ využije znalosti dĺžok najkračších ciest v grafe $G'$, ktoré skombinuje s vchádzajucimi a vychádzajucimi hranami z vrcholu $v$.
+
+\begin{algorithm}[H]
+	\caption{\textsc{ComputeDistance}($G, dist, v$)}
+	\Input{vrchol $v \in G$, kde $G = (V,E)$ je graf s nenapočitanými najkratšími cestami v matici $dist$, najkratšie cesty z a do $v$ sú iniciálne $\infty$}
+	\Output{dopočítaná matica $dist$}
+	
+	\ForEach{$i \in V$}{
+		\ForEach{$j \in V$}{
+			$dist[i,v] \leftarrow min\{dist[i,j] + E(j,v); E(i,v)\}$\tcp{vstupne hrany}
+			$dist[v,i] \leftarrow min\{dist[j,i] + E(v,j); E(v,i)\}$\tcp{vystupne hrany}
+		}
+	}
+	\Return{$dist$}
+\end{algorithm}
+
+\paragraph{Časová zložitosť}
+Časová zložitosť algoritmu je $\mathcal{O}(|V^{2}|)$, keďže v algoritme iterujeme dvoma zanorenými cyklami cez množinu vrcholov $V$, v tele cyklu sa indexy nemenia a operácie vnútri cyklov su konštantné, teda časová zložitosť cyklov je $\mathcal{O}(|V'|) \cdot \mathcal{O}(|V'|) = \mathcal{O}(|V'^{2}|)$, čo je aj zložitosť celého algoritmu.
+
+\paragraph{Korektnosť}
+Z konečnosti forcyklov vyplíva, že je algoritmus konečný. Úprava matice $dist$ je správna, keďže pre dopočítanie vzdialenosti z a do vrcholu $v$ nám stačí prejsť všetkých následnikov a predchodcov. Najkratšie vzdialenosti opäť môžeme definovať
+ako cestu dĺžky $dist[a,b]$, môžeme predpokladať ak existuje nejaká cesta z následnikov $v$ do $b$ tak najkratšia cesta bude tá, kde súčet cesty z následnika a do následnika je najkratší(riadok 4. v algoritme). Obdobne pre najkratšie cesty do vrcholu $v$. Teda je algoritmus korektný.\\
+
+c) Algoritmus spočítania všetkých vzdialeností si môžeme predstaviť tak, že najprv vytvoríme prázdny graf do ktorého vždy pridáme jeden vrchol z pôvodneho grafu, následne budeme aplikovať algoritmus \textsc{ComputeDistance} zo zadania b).
+
+\begin{algorithm}[H]
+	\caption{\textsc{ComputeAllDistances}($G$)}
+	\Input{graf $G = (E,V)$, ktorému napočítame všetky vzdialenosti}
+	\Output{spočítané vzdialenosti $dist$}
+	$G' \leftarrow \emptyset$\tcp{$G' = (V',E')$}
+	$dist \leftarrow$ matica veľkosti $|V| \times |V|$ inicializovaná na $\infty$\;
+	\ForEach{$v \in V$}{
+		pridaj vrchol $v$ do $V'$\;
+		\ForEach{$e \in E$ kde existuje hrana medzi $v$ a vrcholmi $V'$}{
+			pridaj hranu $e$ do $E'$\;
+		}
+		$dist \leftarrow$ \textsc{ComputeDistance($G',dist,v$)}
+	}
+	\Return{dist}
+\end{algorithm}
+
+\paragraph{Časová zložitosť} Je v $\mathcal{O}(|V^{3}|)$, keďže časová zložitosť prvého forcyklu je $\mathcal{O}(|V|)$ (prechádza všetky vrcholy), vnorené operácie operácie majú zložitosť $\mathcal{O}(|V|^{2})$ - \textsc{ComputeDistance} bolo odvodené v podpríklade b) a prejdenie všetkých hrán je v $\mathcal{O}(|V^{2}|)$. Teda celková zložitosť je $\mathcal{O}(|V|) \cdot \mathcal{O}(|V^{2}|) = \mathcal{O}(|V^{3}|)$.\\
+
+\paragraph{Korektnosť} Aby bol algoritmus korektný musí byť konečný a parciálne korektný. Konečnosť je zjavná keďže focyklami prechádzame konečné množiny vrcholov a hran. Konečnosť \textsc{ComputeDistance} bola dokázaná v predchádzajúcom príklade. Keďže predpokládame, že \textsc{ComputeDistance} je korektný postupným pridávaním vrcholov môžeme tvrdiť, že aj \textsc{ComputeAllDistances} je korektný, keďže predpoklad algoritu \textsc{ComputeDistance} je že má napočítané všetky najkratšie vzdialenosti okrem vzdialeností pridávaneho vrcholu. čo v prvok kroku platí vzdialeností 0 vrcholov sú spočítané. Následne pridávame vždy len jeden vrchol, číže vždy máme len jeden vrchol s nenapočitanými vzdialenosťami. Teda je algoritmus korektný.\\
+
+d) Algoritmus pracuje na princípe, že pri každom pridaní vrcholu skontroluje či sa zmenila vzdialenosť do seba sama.
+
+\begin{algorithm}[H]
+	\caption{\textsc{ComputeAllDistancesWithCycles}($G$)}
+	\Input{graf $G = (E,V)$, ktorému napočítame všetky vzdialenosti}
+	\Output{spočítané vzdialenosti $dist$}
+	$dist \leftarrow$ \textsc{ComputeAllDistances}($G$)\;
+	\For{$v \in V$}{
+		$dist \leftarrow$ \textsc{ComputeDistance}($G, dist, v$)\;
+		\If{$dist[v,v] < 0$}{
+			\For{$i \in V$}{
+				$dist[i,v] \leftarrow -\infty$\tcp{neexistuje najkratšia cesta}
+				$dist[v,i] \leftarrow -\infty$\tcp{neexistuje najkratšia cesta}
+			}
+		}
+	}
+	\Return{dist}
+\end{algorithm}
+
+\paragraph{Časová zložitosť} Zo zadania c) vieme, že algoritmus \textsc{ComputeAllDistances} má časovú zložitosť $\mathcal{O}(|V^{3}|)$. V následnej verifikácii zápornych cyklov prechádzame  $\mathcal{O}(|V|) \cdot \mathcal{O}(|V^{2}|)$ kde $\mathcal{O}(|V^{2}|)$ je zložitosť \textsc{ComputeDistance}. Teda celková časová zložitosť je $\mathcal{O}(|V^{3}|)$.
+
+\paragraph{Korektnosť} Algoritmus je z dokázania predchádzajúcich algoritmov a konečnosti forcyklov konečný. Algoritmus korektne nájde všetky vzdialenosti v v grafe pomocou \textsc{ComputeAllDistances}. Následne ak existuje v grafe záporný cyklus musí existovať kratšia cesta z vrcholu do seba sam, v \textsc{ComputeAllDistances} sa s takouto situáciou nepredpokladá preto neni nutné sa vracať a prepočítavať vzdialenosti, v našom algoritme pre detekciu použijeme znova spočítanie vzdialeností pre daný vrchol a pokial existuje záporný cyklus nájde algoritmus zápornu cestu zo $v$ do $v$ v tom prípade definujeme neexistujúcu najkratšiu cestu ako $-\infty$ cez všetky cesty vedúce cez tento vrchol. Teda je algoritmus korektný.
+
+\end{document}
+
+

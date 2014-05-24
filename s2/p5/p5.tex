@@ -1,0 +1,93 @@
+\documentclass[12pt]{iv003}
+
+% BASIC packages
+\usepackage[utf8]{inputenc}
+\usepackage[czech]{babel}
+\usepackage[T1]{fontenc}
+\usepackage{microtype}
+\usepackage{lmodern}
+%\usepackage[margin=1in]{geometry}
+\usepackage{amssymb}
+\usepackage{ifthen}
+\usepackage[all]{xy}
+\usepackage{fancyvrb}
+\usepackage{enumerate}
+\usepackage{verbatim}
+\usepackage{pdfpages}
+\usepackage{amsmath}
+
+\usepackage{pgfplots}
+
+% ALGORITHM typesetting
+\usepackage[noline,boxruled,longend,linesnumbered,czech]{algorithm2e}
+\SetKwInput{Input}{vstup}
+\SetKwInput{Output}{výstup}
+\newcommand{\donothing}[1]{#1}
+\SetArgSty{donothing}
+\SetCommentSty{emph}
+\DontPrintSemicolon
+\SetKwIF{If}{ElseIf}{Else}{if}{then}{else if}{else}{fi}
+\SetKwFor{For}{for}{do}{od}
+\SetKwFor{While}{while}{do}{od}
+\SetKwFor{Foreach}{foreach}{do}{od}
+
+\usepackage{xpatch}
+\xpretocmd{\algorithm}{\hsize=\linewidth}{}{}
+\xpretocmd{\function}{\hsize=\linewidth}{}{}
+\xpretocmd{\procedure}{\hsize=\linewidth}{}{}
+
+%%Set variables
+\setassignment{2}
+\setexercise{5}
+
+\setstudentI{Henrich Lauko}
+\setucoI{410438}
+
+\setstudentII{Karel Kubíček}
+\setucoII{408351}
+
+\begin{document}
+\paragraph{Prvý problém} Algoritmus vždy nájde optimálne riešenie. Dokážeme, že algoritmus vždy nájde také riešenie, že neexistuje iné, ktoré by malo menšiu penalizáciu.\\
+Majme $k$ ako penalizáciu nášho riešenia. Pre penalizáciu jednoriadkového riešenia tvrdenie platí.\\
+Pre viac riadkové riešenie:\\
+Predpokladajme, že algorimus nájde riešenie s penalizáciou $k$ kde ($r_{1},\dots,r_{i}$) a $r_{i}$ vyjadruje penalizáciu na danom riadku.
+Uvažujme iné riešenie $k'$ s penalizáciami ($s_{1},\dots,s_{j}$). Podľa nášho hladového algoritmu vieme, že $s_{1} \geq r_{1}$, lebo sme $r_{1}$ zobrali ako najmenšiu možnú penalizáciu pre prvý riadok. Modifikáciou riešenia ($s_{1},\dots,s_{j}$) tak, že presunieme slová z druhé riadka tak, aby sa $s'_{1} = r_{1}$ a odobraním tejto penalizácie dostávame problém s penalizáciami  $(s'_{2},\dots,s'_{l})$ kde $k'' \leq k' - (r_{1} - s_{1})$  , ktorý je o jeden riadok kratši od pôvodneho problému, teda jeho riešenením je ($r_{2},\dots,r_{i}$). Induktívne $k - r_{1}  \leq k'' \leq k' - r_{1}$, takže platí aj $k \leq k'$. Algoritmus je teda optimálny.
+
+\paragraph{Druhý problém} Algoritmus nenájde optimálne riešenie, protipríklad:\\
+Majme $L = 8$ a nasledujúcu vetu "$AAA$ $BB$ $CCC$ $DDD$ $EE$ $FFFFF$".
+Potom hladový algoritmus rozdelí vetu nasledovne:
+\begin{center}
+\begin{tabular}{lc|c|c}
+	veta: 			& $AAA$ $BB$ $CCC$ 	& $DDD$ $EE$ 	& $FFFFF$ \\
+	penalizácia ($L - K^{2}$):	&	0				&	9			&	9	\\
+\end{tabular}
+\end{center}
+Ale optimálne rozdelenie je:
+\begin{center}
+\begin{tabular}{lc|c|c}
+	veta: 						& $AAA$ $BB$ 	& $CCC$ $DDD$ 	& $EE$ $FFFFF$ \\
+	penalizácia ($L - K^{2}$):	&	9			&	4			&	1	\\
+\end{tabular}
+\end{center}
+Keďže súčet penalizácií hladového algoritmu (18) je väčší ako súčet penalizácií optimálneho riešenia (14), tak algoritmus nemusí nájsť optimálne riešenie pre tento problém.
+
+\paragraph{Tretí problém}Algoritmus nenájde optimálne riešenie, protipríklad:\\
+Majme $L = 4$ a nasledujúcu vetu "$A$ $A$ $A$ $A$ $BB$".
+Potom hladový algoritmus rozdelí vetu nasledovne:
+\begin{center}
+\begin{tabular}{lc|c}
+	veta: 					& $A$ $A$ $A$ $A$ 	& $BB$  \\
+	penalizácia ($L - K$):	&	0				&	2	\\
+\end{tabular}
+\end{center}
+Celková penalizácia je maximum z penalizácií teda 2.
+Ale optimálne rozdelenie je:
+\begin{center}
+\begin{tabular}{lc|c}
+	veta: 					& $A$ $A$ $A$  	& $A$ $BB$ \\
+	penalizácia ($L - K$):	&	1			&	1	\\
+\end{tabular}
+\end{center}
+Pre optimálne rozdelenie je penalizácia 1. Keďže existuje riešenie s menšou penalizáciou ako riešenie hladového algoritmu, tak hladový algoritmus nie je optimálny pre riešenie tohto problému.
+\end{document}
+

@@ -1,0 +1,118 @@
+\documentclass[12pt]{iv003}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage[czech]{babel}
+\usepackage{amsmath, amsthm}
+\usepackage{enumerate}
+
+%% algoritmy
+%{{{ Latex definitions
+% ALGORITHM typesetting
+\usepackage[noline,boxruled,longend,linesnumbered,czech]{algorithm2e}
+%\SetKwInOut{Input}{vstup}\SetKwInOut{Output}{výstup}
+\SetKwInput{Input}{vstup}
+\SetKwInput{Output}{výstup}
+\newcommand{\donothing}[1]{#1}
+\SetArgSty{donothing}
+\SetCommentSty{emph}
+\SetFuncSty{textsc}
+\SetProcNameSty{textsc}
+%\IncMargin{1em}
+%\setlength{\algomargin}{1em}
+\DontPrintSemicolon
+\SetKwIF{If}{ElseIf}{Else}{if}{then}{else if}{else}{fi}
+\SetKwFor{For}{for}{do}{od}
+\SetKwFor{While}{while}{do}{od}
+
+% hack to set the correct width of the algorithm
+\usepackage{xpatch}
+\xpretocmd{\algorithm}{\hsize=\linewidth}{}{}
+\xpretocmd{\function}{\hsize=\linewidth}{}{}
+\xpretocmd{\procedure}{\hsize=\linewidth}{}{}
+%%/algoritmy
+
+%%% ZDE SADA, UKOL CISLO X, JMENO, UCO
+\setexercise{2}
+\setassignment{1}
+\setstudenta{Karel Kubíček}
+\setucoa{408351}
+\setstudentb{Henrich Lauko}
+\setucob{410438}
+
+\begin{document}
+
+\SetKwFunction{ffmin}{Min} %v pripade stejnych hodnot bere prvni
+\SetKwFunction{fftakePair}{TakePair} %po konci je vse NaN
+
+{\footnotesize \begin{procedure}[H]
+\SetKwFunction{ffcomputesiluete}{ComputeSiluete}
+    \caption{ComputeSiluete($Input, from, to$) }
+    \Input{pole usporiadaných trojic $Input$, využíváme v zanorení rozsah od $from$ do $to$}
+    \Output{vypočítaná silueta v poli usporiadanej $n$-tice $Output$}
+    \uIf{$to = from$}{
+		\Return{$Input[from]$} \tcp{rekurzívna zarážka, vracia pole 3 čísiel}
+    }
+    $half \leftarrow (to + from)/2$ \;
+    $LeftArray \leftarrow$ \ffcomputesiluete($Input, from, half$) \;
+    $RightArray \leftarrow$ \ffcomputesiluete($Input, half+1, to$) \;
+	$pl \leftarrow 0$ \tcp{index $i$-te dvojice v poli left}
+	$pr \leftarrow 0$ \tcp{index $i$-te dvojice v poli right}
+	$Output \leftarrow \emptyset$ \;
+    \While{$pl < \lceil |LeftArray|/2 \rceil \vee pr < \lceil |RightArray|/2 \rceil$} {
+		$left  \leftarrow LeftArray.$\fftakePair($pl$) \tcp{funkcia \fftakePair$(i)$ vráti $i$-tou dvojici z poľa}
+		$right \leftarrow RightArray.$\fftakePair($pr$)\;{}
+		\eIf{$left.x < right.x$}{
+			$prevRight \leftarrow RightArray.$\fftakePair$(pr - 1)$\;
+			\eIf{$left.y \geq prevRight.y$}{
+				přidej $left$ do $Output$ \;
+			}{
+				\eIf{$prevRight.x \leq left.x$}{
+					přidej $(left.x,prevRight.y)$ do $Output$ \;
+				}{
+					přidej $left$ do $Output$ \;
+				}
+			}
+			$pl \leftarrow pl +1$\;
+		}{
+			$prevLeft \leftarrow Left.$\fftakePair$(pl - 1)$\;
+			\eIf{$right.y \geq prevLeftArray.y$}{
+				přidej $right$ do $Output$ \;
+			}{
+				\eIf{$prevLeft.x \leq right.x$}{
+					přidej $(right.x,prevLeft.y)$ do $Output$ \;
+				}{
+					přidej $right$ do $Output$ \;
+				}
+			}
+			$pr \leftarrow pr +1$\;
+		}		
+    }
+    \tcp{vložíme poslednú $x$-vú nepoužitú súradnicu do $Output$}
+    \uIf{$LeftArray.last \leq RightArray.last$}{
+		přidej $RightArray.last$ do $Output$
+    }\uElse{
+		přidej $LeftArray.last$ do $Output$
+    }
+    \Return($Output$)
+\end{procedure}}
+\paragraph{Popis algoritmu:} Algoritmus postupuje metodou rozdeluj a panuj. V prvom kroku voláme procedúru \ffcomputesiluete($Input, 0, počet\ trojic\ v\ Input$), ktorá rozdelí vstupné pole na podproblémy až na jednotlivé trojice reprezentujúce siluety jednej budovy, kde sa rekurzia zastaví. V kroku "panuj" následne spojujeme vždy 2 dané siluety. Siluety si môžeme predstaviť na jednej ose, kde ich prechádzame zľava po $x$-ovej osy cez všetky dvojice a spracovávame vždy prvú nespracovanú dvojicu, z poslednej bereme len x súradnicu pre uzavretie siluety. Dvojice z poľa získavame pomocou funkcie \fftakePair($i$), ktorá vracia $i$-tu dvojicu z poľa, pre hodnoty mimo poľa vráti nulu na danej pozícií dvojice(napr. posledná dvojica je $(x,0)$, $-1$ dvojica je $(0,0)$)\\
+V cykle vždy vezmeme dvojice na ktorých sa aktuálne nachádzame v oboch siluetách. Následne určíme, ktorá je viac vľavo po $x$-ovej osy. Aby bola dvojica relevantná pre výslednú siluetu musí splňovať jednu z nasledujúcich podmienok:
+\begin{enumerate}
+	\item $y$ súradnica dvojice je väčšia ako posledná spracovaná $y$-súradnica z druhého poľa, vtedy pridáme danú dvojicu do výsledku, lebo prevyšuje aktuálnu výšku druhej siluety
+	\item ak je mešia ako predchádzajúca to znamená že daná hrana, môže vytvárať prienik s hranou druhej siluety alebo druhá silueta sa nachádza mimo prvej siluety, čo testuje zanorený esle-if 
+\end{enumerate}
+\paragraph{Korektnost:} Algoritmus je korektný ak je konečný a parciálne korektný.
+Pre konečnosť ukážeme, že rekurzia skončí a, že spájanie dvoch polí v rekurzívnom voláni tiež skončí. Pri rekuzii vidíme, že každým zanorením sa vstupné pole zmenší o polovicu, teda existuje zanorenie kedy vstup bude obsahovať len jednu trojicu a rekurzia zastaví. Podmienka cyklu kontroluje či sme spojili už všetky dvojice z polí, keďže každým prechodom cyklu zvýšime $pl$ alebo $pr$ a veľkosti polí sa nemenia môžeme tvrdiť, že cyklus zastaví. Takže aj celý algoritmus je konečný.\\
+Pre parciálnu korektnosť platí nasledujúce. Ak vstup obsahuje jednu trojicu tak výstup algoritmu je táto trojica. Môžeme induktívne tvrdiť, že pridaním ďalšej trojice môžu vzniknúť dva prípady:
+\begin{enumerate}
+	\item dané siluety majú prienik: V tomto prípade sa algoritmus rozhoduje, či sa daná silueta nachádza v tej druhej(viď popis algoritmu) ak áno berieme výšku z predchádzajúcej siluety. V prípade, že sa hrany pretínajú musíme započítať vyšiu výšku v na danej $x$-ovej súrandici.
+	\item dané siluety nemajú prienik: Z algoritmu vidíme, že do výsledneho riešenie ich zreťazí za seba podľa $x$-ovej súradnice.
+\end{enumerate}
+Keďže algoritmus vždy berie len jednú dvojicu zo spájaných polí až kým obe polia neprejde nenastane teda  situácia, že by na konci cyklu existovala nejaká nespracovaná dvojica. Následne na uzavretie siluety algoritmus vezme hodnotu najďalej na $x$-ovej osy, takže algoritmus korektne uzavrie a spojí 2 siluety teda je korektný.
+\paragraph{Asymptotická časová složitost:} tohoto algoritmu je $\mathcal{O}(n\cdot\log(n))$, rekurzia sa volá $\log_{2}n$-krát (pólením pôvodneho vstupu). V každom rekurzívnom zanorení (okrem posledného, ktoré v konštantnom čase vráti trojicu) algoritmus spája 2 polia vo while cykle. Toto spájanie prebehne v lineárnom čase vzhľadom k dĺžke oboch polí, keďže v každom kroku spracujeme jednu dvojicu a operácie v cykle sú v konštantnom čase. Vieme, že v rekurzívnych volaniach v hĺbke $i$ spojujeme maximálne $2^{i}$ polí, kde každé z týchto polí môže mať dĺžku najviac $n/2^{i}$. Keďže počet spracovávaných bodov je v každej vrstve rekurzie nanajvýš $n$, dokážeme ju vyriešiť v $\mathcal{O}(n)$. Z čoho plynie , že algoritmus prebehne v $\mathcal{O}(\log(n))$ rekurzívnych volaniach o zložitosti $\mathcal{O}(n)$, takže asymptotická časová zložitosť algoritmu je $\in \mathcal{O}(n\cdot\log(n))$. \\
+\hrule
+\begin{center}
+\end{center}
+Tento algoritmus bol testovaný na ľuďoch. Behom vývoja nebol zabitý žiaden živý tvor, i keď dvom skoro hrablo.
+\end{document}

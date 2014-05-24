@@ -1,0 +1,103 @@
+\documentclass[12pt]{iv003}
+
+\setassignment{1}
+\setexercise{1}
+
+% BASIC packages
+\usepackage[utf8]{inputenc}
+\usepackage[czech]{babel}
+\usepackage[T1]{fontenc}
+\usepackage{microtype}
+\usepackage{lmodern}
+%\usepackage[margin=1in]{geometry}
+\usepackage{amssymb}
+\usepackage{ifthen}
+\usepackage[all]{xy}
+\usepackage{fancyvrb}
+\usepackage{enumerate}
+
+\usepackage{pgfplots}
+
+% ALGORITHM typesetting
+\usepackage[noline,boxruled,longend,linesnumbered,czech]{algorithm2e}
+\SetKwInput{Input}{vstup}
+\SetKwInput{Output}{výstup}
+\newcommand{\donothing}[1]{#1}
+\SetArgSty{donothing}
+\SetCommentSty{emph}
+\DontPrintSemicolon
+\SetKwIF{If}{ElseIf}{Else}{if}{then}{else if}{else}{fi}
+\SetKwFor{For}{for}{do}{od}
+\SetKwFor{While}{while}{do}{od}
+
+\usepackage{xpatch}
+\xpretocmd{\algorithm}{\hsize=\linewidth}{}{}
+\xpretocmd{\function}{\hsize=\linewidth}{}{}
+\xpretocmd{\procedure}{\hsize=\linewidth}{}{}
+
+%%Set variables
+\setassignment{1}
+\setexercise{1}
+
+\setstudentI{Henrich Lauko}
+\setucoI{410438}
+
+\setstudentII{Martin Hanžl}
+\setucoII{410497}
+
+\begin{document}
+
+\begin{function}[H]
+	\caption{WeightedMedian($Array, n, w$)}
+	\Input{pole $Array$ je dĺžky $n$, obsahuje dvojice ($x_i,w_i$)}
+	\Output{optimálny prvek $x_k$}
+	
+	$median_{x} \leftarrow$ median($Array$) \tcp{nájde median z hodnôt $\{ x_{1},..,x_{n} \}$}
+	$Array_{low} \leftarrow \emptyset$ \;
+	$Array_{high} \leftarrow \emptyset$ \;
+	$w_{low} \leftarrow 0$ \;
+	
+	\If{$n = 1$} {
+		\Return{$Array[1]$}
+	}
+	\For{$i \leftarrow 1$ \KwTo $n$}{
+		\eIf{$Array[i] < median_{x}$}{
+			$w_{low} \leftarrow w_{low} + w_{i}$ \;
+			Append $Array[i]$ to $Array_{low}$ \;
+		}{
+			Appent $Array[i]$ to $Array_{high}$ \;
+		}
+	
+	}
+	\eIf{$w + w_{low} > \frac{1}{2}$}{
+			WeightedMedian($Array_{low}, |Array_{low}|, w$) \;
+	}{
+			WeightedMedian($Array_{high}, |Array_{high}|, w_{low}$)
+	}
+\end{function}
+
+Algoritmus využíva znalosť výpočtu mediánu v $\theta(n)$, dokázaneho na prednáške.
+Základna stratégia algoritmu je podobná binárnemu vyhľadávaniu: algoritmus spočíta
+medián a rekurzívne pokračuje na časti, kde sa nachádza vážený medián.
+
+Inicilizácia algoritmu je WeightedMedian($Array, |Array|, 0$), kde $|Array|$ udáva počet prvkov poľa. V behu algoritmu, $Array$ je pole obsahujúce $median$ pôvodneho vstupu a $w$ je suma váh prvkov z celkového vstupu algoritmu, ktoré su menšie ako všetky prvky v poli $Array$. 
+$Array_{low}$ obsahuje všetky prvky $x_{i}$ menšie ako $median$ z prvkov $Array$ a $Array_{high}$ obsahuje všetky prvky $x_{i}$ väčšie alebo rovné ako $median$ z prvkov $Array$, váha $w_{low}$ je súčet váh všetkých prvkov z $Array_{low}$.
+
+\paragraph{Korektnosť:}
+Pre dokázanie korektnosti ukážeme, že vážený medián počiatočnej postupnosti(optimálny prvok $x_{k}$) je vždy v poli rekurzívneho volania a $w$ je suma všetkých váh prvkov $x_{i}$ menších ako všetky prvky v poli $Array$. Pre počiatočný stav podmienka triviálne platí. Pre dokázania, že podmienka platí v každom rekurzívnom volaní použijeme indukciu. Indukčný predpoklad bude, že naša kladená podmienka platí. Môžu nám nastať dva prípady:
+\begin{enumerate}
+	\item $w + w_{low} > \frac{1}{2}$ Keďže $x_{k}$ sa nachádza v $Array$ v 16. riadku algoritmu vieme, že $x_{k}$ sa nachádza buďto v $Array_{low}$ alebo v $Array_{high}$. Vzhľadom na to, že váha všetkých $x_{i}$ menších než prvky v $Array_{high}$  je väčšia než $\frac{1}{2}$, potom podľa definície vážený medián
+	nemôže byť v poli $Array_{high}$, takže musí byť v poli $Array_{low}$. Pole $Array_{low}$ obsahuje všetky najmenšie prvky z pola $Array$, takže $w$ sa nemení a splňuje podmienku.
+	\item $w + w_{low} \leq \frac{1}{2}$ potom na riadku 16. musí byť $x_{k}$ v $Array_{high}$. Všetky prvky $Array_{high}$ sú väčšie ako všetky prvky v $Array_{low}$, takže celková váha všetkých prvkov menších ako prvky v $Array_{high}$ je $w + w_{low}$. Teda predpoklad je splnený.
+
+\end{enumerate}
+
+Takže podľa indukcie je podmienka vždy pravdivá. Algoritmus vždy skončí, lebo
+pole $Array$ sa každým rekurzivním volaním zmenší. Keďže je algoritmus konečný
+aj parciálne korektný tak je aj korektný.
+
+\paragraph{Analýza zložitosti:}
+Algoritmus beží v čase $\theta(n)$. Výpočete $medianu$ je v $\theta(n)$ a rozdelenie $Array$ do $Arrya_{low}$ a $Array_{high}$ tiež v $\theta(n)$. Teda zložitosť jedného rekurzívneho volania je $\theta(n) + \theta(n) = \theta(n)$.
+Každé rekurzívne volanie zmeší velkosť vstupu $n$ na $\frac{n}{2}$. Rekurentná rovnica
+bude $T(n) = T(n/2) +\theta(n) = \theta(n)$.
+\end{document}

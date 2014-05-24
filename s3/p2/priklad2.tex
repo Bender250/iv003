@@ -1,0 +1,100 @@
+\documentclass[12pt]{iv003}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage[czech]{babel}
+\usepackage{amsmath, amsthm}
+\usepackage{enumerate}
+
+%% algoritmy
+%{{{ Latex definitions
+% ALGORITHM typesetting
+\usepackage[noline,boxruled,longend,linesnumbered,czech]{algorithm2e}
+%\SetKwInOut{Input}{vstup}\SetKwInOut{Output}{výstup}
+\SetKwInput{Input}{vstup}
+\SetKwInput{Output}{výstup}
+\newcommand{\donothing}[1]{#1}
+\SetArgSty{donothing}
+\SetCommentSty{emph}
+%\IncMargin{1em}
+%\setlength{\algomargin}{1em}
+\DontPrintSemicolon
+\SetKwIF{If}{ElseIf}{Else}{if}{then}{else if}{else}{fi}
+\SetKwFor{For}{for}{do}{od}
+\SetKwFor{While}{while}{do}{od}
+\SetFuncSty{textsc} \SetProcNameSty{textsc}
+
+% hack to set the correct width of the algorithm
+\usepackage{xpatch}
+\xpretocmd{\algorithm}{\hsize=\linewidth}{}{}
+\xpretocmd{\function}{\hsize=\linewidth}{}{}
+\xpretocmd{\procedure}{\hsize=\linewidth}{}{}
+%%/algoritmy
+
+%%% ZDE SADA, UKOL CISLO X, JMENO, UCO
+\setexercise{3}
+\setassignment{2}
+\setstudenta{Jiří Novotný}
+\setucoa{409963}
+\setstudentb{Henrich Lauko}
+\setucob{410438}
+
+\begin{document}
+Na efektívne riešenie sme použili dynamické programovanie s technikou memoizácie predchádzajúcich využitých sekvencií slov. Pri memoizácii využívame maticu veľkosti $(|z| + 1) \times (|z| + 1)$. Kde na pozíci $matrix[i][j]$ držíme pravdivostú hodnotu, či je možné v $i$ krokoch cez slovo $x$ a $j$ krokoch cez slovo $y$ prejsť $i + j$ znakov zo slova $z$. Teda pozícia $matrix[0][0]$ nám vyjadruje, spojenie prázdneho slova, ktoré dokážeme vytvoriť z ľubovoľných slov mocnených na 0 ($x^{0} = \epsilon$), takže bude vždy platné. V algoritme sú slová a matica indexované od 0, preto indexy obsahujú $-1$. Index $x_{0}$ teda označuje prvý znak slova $x$. Pri indexácii slov využívame zvyšky po delení dĺžkou daných slov pre prípady repetície(pozícia v slove je definovaná ako $x_{i - 1 \mod |x|}$). Môžeme si slová $x$ a $y$ predstaviť aj ako repetíciu sama seba veľkosti slova $z$. Slovo $z$považujeme za zreťazenie v prípade, že nejaké miesto na diagonále matice je \textsc{True}, čo znamená, že existuje postúpnosť znakov zo slov $x$ a $y$ tvoriace prechod maticou a tým pádom aj spojenie~$z$.\\
+
+\begin{procedure}[H]
+	\caption{isConnection($x, y, z$)}
+	\Input{slovo $z$, ktorému overujeme, či je spojením slov $x$ a $y$}
+	\Output{rozhodnutie, či $z$ je spojenín $x$ a $y$}
+	\tcp{inicializaciá memoizačnej matice}
+	$matrix \leftarrow$ matica veľkosti $(|z| + 1) \times (|z| + 1)$ \\
+	$matrix[0][0] \leftarrow$ \textsc{True} \\
+	\tcp{inicializácia kraju matice}
+	\For{$i \leftarrow 1$ \KwTo $|z|$}{
+			$matrix[0][i] \leftarrow$ $(matrix[0][i - 1] \wedge x_{i - 1 \mod |x|} = z_{i - 1})$ \tcp{prechod pod slovom x}
+			$matrix[i][0] \leftarrow$ $(matrix[i -1][0] \wedge y_{i - 1 \mod |y|} = z_{i - 1})$ \tcp{prechod pod slovom y}
+	}
+	\If{$matrix[0][|z|] \vee matrix[|z|][0]$}{
+		\Return{\textsc{True}} \tcp{z je mocninou len jedného slova}
+	}
+	\tcp{memoizácia}
+	\For{$i \leftarrow 1$ \KwTo $|z|$}{
+		\For{$j \leftarrow 1$ \KwTo $|z| - i$}{
+			\uIf{$(matrix[i][j - 1] \wedge x_{j - 1 \mod |x|} = z_{i + j - 1})$}{
+				$matrix[i][j] \leftarrow$ \textsc{True} \tcp{existuje prechod pod znakom zo slova x}
+			}\uElseIf{$(matrix[i - 1][j] \wedge y_{i - 1 \mod |y|} = z_{i + j - 1})$}{
+				$matrix[i][j] \leftarrow$ \textsc{True} \tcp{existuje prechod pod znakom zo slova y}
+			}\uElse{
+				$matrix[i][j] \leftarrow$ \textsc{False} \tcp{neexistuje prechod pod žiadnym znakom}
+			}
+		}
+		\If{$matrix[i][|z| - i]$}{
+			\Return{\textsc{True}} \tcp{dokázali sme nájsť prechod znakov až ku koncu slova z}
+		}
+	}
+	\Return{\textsc{False}} \tcp{slovo z není spojením  slov x a y}
+\end{procedure}
+
+\newpage
+\paragraph{Časová zložitosť:}
+Algoritmus počas svojho výpočtu vypĺňa maticu veľkosti $(|z| + 1) \times (|z| + 1)$, kde cez každú pozíciu iteruje práve jeden krát. Vzľadom na konštatné operácie vnútri cyklov je časová zložitošt prvého cyklu $z \in \mathcal{O}(z)$ a druhých dvoch zanorených cyklov $\mathcal{O}(z^{2})$, teda celková zložitosť je $(z \cdot z/2) \in \mathcal{O}(z^{2})$.
+
+\paragraph{Konečnosť:}
+V cykloch algoritmu rastú indexy vždy o 1, vzhľadom k tomu, že indexy
+v tele cyklu nemeníme z vlastností for-cyklu vieme, že algoritmus,vykoná v prvom cykle len $z$ iterácií v druhých dvoch zanorených cykloch práve $z \cdot z/2$, teda aj skončí.
+
+\paragraph{Korektnosť:}
+Algoritmus je korektný, ak je konečný a parciálne korektný. Konečnosť sme už ukázali a parciálnu korektnosť môžeme dokázať indukciou. Môžeme tvrdiť, že
+pre dĺžku slova $|z| = 0$ algoritmus platí (jak sme už v úvode rozobrali $\epsilon $ je vždy spojením nejakých dvoch slov $x$ a $y$). Teda predpokladajme, že pre ľubovolné slovo dĺžky $n$ algoritmus vráti korektný výsledok. Chceme dokázať, že ak toto slovo predĺžime o ľubovolný znak algoritmus bude stále korektný. Z indukčného predpokladu vieme, že máme maticu vyplnenú správne pod diagonálov. Pre doplnenie hodnôt na diagonále využívame vedomosťí predchádzajúcich krokov z matice a aktuálnu pozíciu v slovách $x$ a $y$. Korektnosť správneho výsledku na pozícii $matrix[i][j]$, kde $i = j$ nám zaisťujú podmienky na riadkoch 12 - 17, kde vychádzame z už správnych výsledkov a posunu buď po znaku zo slova $x$ alebo $y$, ak takýto predhod neexistuje, tak ani spojenie nemôže existovať. Teda je algoritmus korektný.
+
+\begin{center}
+	\hrule
+\end{center}
+\paragraph{Poznámka:}
+Pre memoizáciu by bolo možné použiť aj 3-dimenzionálne pole veľkosti $x \times y \times z$. Čo by v prípade veľkého $z$ ($z > x \cdot y$) bolo efektívnejšie riešeni. Pre jednoduchší zápis a prehľadnosť sme ale zvolili riešenie pomocou matice.
+\end{document}
+
+
+
+
+

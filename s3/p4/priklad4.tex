@@ -1,0 +1,95 @@
+\documentclass[12pt]{iv003}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage[czech]{babel}
+\usepackage{amsmath, amsthm}
+\usepackage{enumerate}
+
+%% algoritmy
+%{{{ Latex definitions
+% ALGORITHM typesetting
+\usepackage[noline,boxruled,longend,linesnumbered,czech]{algorithm2e}
+%\SetKwInOut{Input}{vstup}\SetKwInOut{Output}{výstup}
+\SetKwInput{Input}{vstup}
+\SetKwInput{Output}{výstup}
+\newcommand{\donothing}[1]{#1}
+\SetArgSty{donothing}
+\SetCommentSty{emph}
+%\IncMargin{1em}
+%\setlength{\algomargin}{1em}
+\DontPrintSemicolon
+\SetKwIF{If}{ElseIf}{Else}{if}{then}{else if}{else}{fi}
+\SetKwFor{For}{for}{do}{od}
+\SetKwFor{While}{while}{do}{od}
+\SetFuncSty{textsc} \SetProcNameSty{textsc}
+
+% hack to set the correct width of the algorithm
+\usepackage{xpatch}
+\xpretocmd{\algorithm}{\hsize=\linewidth}{}{}
+\xpretocmd{\function}{\hsize=\linewidth}{}{}
+\xpretocmd{\procedure}{\hsize=\linewidth}{}{}
+%%/algoritmy
+
+%%% ZDE SADA, UKOL CISLO X, JMENO, UCO
+\setexercise{3}
+\setassignment{4}
+\setstudenta{Karel Kubíček}
+\setucoa{408351}
+\setstudentb{Henrich Lauko}
+\setucob{410438}
+
+\begin{document}
+a) Pri generovaní prípustneho toku môžeme modifikovať myšlienku hľadania maximálneho toku, kde zvyšujeme tok kým neexistuje nezaplnená cesta medzi počiatkom a koncom toku na to, že algoritmus zvyšuje ohodnotenie toku kým na každej hrane neni zaplnená požiadavka. Algoritmus môže vyzerať nasledovne:
+
+\begin{algorithm}[H]
+	\caption{\textsc{AcceptableFlow}($G,p$)}
+	\Input{graf $G = (E,V)$, a funkcia $p$ definujúca požiadavky na každú hranu}
+	\Output{nejaký tok $f$ splňujúci požiadavky}
+	\tcp{inicializácia toku na všetkých hranách}
+	\ForEach{$(i,j) \in E$}{
+		$f(i,j) \leftarrow 0$
+	}
+	\While{existuje cesta $c$ medzi $s$ a $t$ v $G$ na ktorej je hrana kde $f(i,j) < p(i,j)$ }{
+		\tcp{navýš hodnoty $f$ na tejto ceste o najvyšiu požiadavku na tejto ceste}
+		$r_{f} \leftarrow$ max\{$p(i,j) - f(i,j): (i,j) \in c\}$\;
+		\ForEach{$(i,j) \in c$}{
+			$f(u,v) \leftarrow f(u,v) + r_{f}$
+		}
+	}
+	\Return{f}
+\end{algorithm}
+
+Tento algoritmus vychádza z modifikácie Ford-Fulkersonovho algoritmu. Najprv inicializuje nulový tok, následne hľadá cesty medzi počiatkom $s$ a koncom toku $t$, také, že na nich existuje aspoň jedna hrana s nesplneným požiadavkom. 
+
+\paragraph{Korektnosť}
+Algoritmus iteruje dokým existujú nejaké nesplnené cesty, pri každej iterácii algoritmus splní požiadavok aspoň jednej hrany, keďže počet hran je konečný, tak aj algoritmus je konečný. Aby bol tok prípustný musí splňovať požiadavok na každej hrane, z algoritmu vyplíva, že navyšovaním toku si predchádzajúce vyriešené hrany nemôžeme pokaziť, keďže algoritmus naplní každú hranú tak aj celkový tok bude prípustný, teda algoritmus je korektný.
+
+\paragraph{Zložitosť}
+Inicializácia toku prebehne v lineárnom čase voči počtu hrán - $\mathcal{O}(|E|)$.
+Z predpokladu, že každá iterácia cyklu v algoritme splní aspoň jednu požiadavku, teda sa vykoná $\mathcal{O}(|E|)$ krát. Operácie v cykle tiež majú časovú zložitosť $\mathcal{O}(|E|)$, keďže hľadanie maximálnej požiadavky a navýšenie cesty prechádza lineárne cez cestu grafu v najhoršom prípade cez celý graf. Z čoho vyplíva výsledná zložitosť $\mathcal{O}(|E|) + \mathcal{O}(|E|) \cdot \mathcal{O}(|E|) = \mathcal{O}(|E^{2}|)$\\
+
+
+b) Algoritmus pre nájdenie toku s minimálnou hodnotou využíva algoritmus z predchádzajúceho príkladu, kde získa nejaký prípustný tok. Následne napočítaný tok minimalizuje(v tomto kroku sa použije algoritmus \textsc{MaxFlow})
+
+\begin{algorithm}[H]
+	\caption{\textsc{MinimalFlow}($G, p$)}
+	\Input{graf $G = (E,V)$, a funkcia $p$ definujúca požiadavky na každú hranu}
+	\Output{minimálny tok $f$ splňujúci požiadavky}
+	$f \leftarrow$ \textsc{AcceptableFlow($G,p$)}\;
+	\ForEach{$(i,j) \in E$}{
+		$additionalFlow(i,j) \leftarrow f(i,j) - p(i,j)$\tcp{rozdiel tokov}
+	}
+	$r \leftarrow$ \textsc{MaxFlow($G, additionalFlow$)}\;
+	\ForEach{$(i,j) \in E$}{
+		$f \leftarrow f(i,j) - r(i,j)$\tcp{rozdiel povodneho toku a prebitku}
+	}
+	\Return{f}
+\end{algorithm}
+
+\paragraph{Korektnosť} Nejaký prípustný tok získame pomocou predchádzajúceho algoritmu \textsc{AcceptableFlow}, ktorého korektnosť máme dokázanú vyššie. Tento algoritmus vráti tok nie nutne najmenší, preto treba detekovať, ktoré cesty v grafe je možné zmenšovať(zbaviť sa nabitočného toku). Vytvoríme teda dočasný tok, kde si spočítame nadbitočný tok. Tento nadbitok chceme následne minimalizovať teda určiť koľko toku je možné odobrať aby sme neporušili poptávky. Ak v nadbitočnom toku existuje nejaká cesta z $s$ do $t$ to znamená, že celú túto cestu je možné odobrať z pôvodneho toku. Nás zaujíma koľko najviac tohto nadbitku dokážeme odobrať, čo vykoná algoritmus \textsc{MaxFlow}, ktorý vráti najväčší možný zbitkový tok, ktorý následne odčítame od pôvodneho toku. Dostávame korektný minimálny tok. Mimo operácie \textsc{MaxFlow} o ktorej predpokládame, že je konečná je aj zvyšok algoritmu konečný, čo vyplýva z konečnosti forcyklov a dôkazu \textsc{AcceptableFlow} z predchádzajúceho príkladu.
+
+\paragraph{Časová zložitosť} Nie je možné určiť vzhľadom k neurčeniu náročnosti \textsc{MaxFlow}. Zložitosť môže ovplyvniť ešte hľadanie  prípustneho toku, ktorú sme odvodili v minulom príklade na $\mathcal{O}(|E^{2}|)$, zvyšné operácie sú lineárne voči počtu hrán.
+\end{document}
+
+

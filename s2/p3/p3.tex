@@ -1,0 +1,102 @@
+\documentclass[12pt]{iv003}
+
+% BASIC packages
+\usepackage[utf8]{inputenc}
+\usepackage[czech]{babel}
+\usepackage[T1]{fontenc}
+\usepackage{microtype}
+\usepackage{lmodern}
+%\usepackage[margin=1in]{geometry}
+\usepackage{amssymb}
+\usepackage{ifthen}
+\usepackage[all]{xy}
+\usepackage{fancyvrb}
+\usepackage{enumerate}
+\usepackage{verbatim}
+\usepackage{pdfpages}
+\usepackage{amsmath}
+
+\usepackage{pgfplots}
+
+% ALGORITHM typesetting
+\usepackage[noline,boxruled,longend,linesnumbered,czech]{algorithm2e}
+\SetKwInput{Input}{vstup}
+\SetKwInput{Output}{výstup}
+\newcommand{\donothing}[1]{#1}
+\SetArgSty{donothing}
+\SetCommentSty{emph}
+\DontPrintSemicolon
+\SetKwIF{If}{ElseIf}{Else}{if}{then}{else if}{else}{fi}
+\SetKwFor{For}{for}{do}{od}
+\SetKwFor{While}{while}{do}{od}
+\SetKwFor{Foreach}{foreach}{do}{od}
+
+\usepackage{xpatch}
+\xpretocmd{\algorithm}{\hsize=\linewidth}{}{}
+\xpretocmd{\function}{\hsize=\linewidth}{}{}
+\xpretocmd{\procedure}{\hsize=\linewidth}{}{}
+
+%%Set variables
+\setassignment{2}
+\setexercise{3}
+
+\setstudentI{Henrich Lauko}
+\setucoI{410438}
+
+\setstudentII{Karel Kubíček}
+\setucoII{408351}
+
+\begin{document}
+
+Celkovú pravdepodobnosť, že nám padne $k$ orlov spočítame ako súčet všetkých prípadov padnutia $k$ orlov v $n$ hodoch. Každý z týchto prípadov môžeme definovať ako súčín $k$
+pravdepodobností, že nám padne orol a súčin $n-k$ pravděpodobností, že nám padne panna.
+Náš algoritmus vychádza z rekurzívneho vzťahu, kde $P(k,n)$ vyjadruje pravdepodobnosť, že padne $k$ orlov na $n$ minciach:\\
+\[ P(k,n) = \left\{
+\begin{array}{l l}
+	1 & \quad \text{ak $k = 0$ a $n = 0$}\\
+	0 & \quad \text{ak $n = 0$ a $k$ je ľubovolné}\\
+	P(k,n-1) \cdot (1 - p_{n})   + P(k-1,n-1) \cdot p_{n} & \quad \text{inak}\\
+\end{array} \right.\]
+Pre dynamický návrh použijeme metódu memoizácie, kde si budeme predpočítavať predchádzjúce postupnosti hodov. Teda pre výpočet budeme potrebovať maticu $M$ veľkosti $(n-k+1) \times k + 1$ kde v bode $M[0][0]$ je pravdepodobnosť 1, že na 0 hodov padne 0 orlov. V $M[n-k][k] = P(k$ orlov na $n$ hodov). Algoritmus začne v bode $[0][0]$ a bude predpočítavať hodnoty až ku bodu $[n-k][k]$ nasledovne:
+
+1. prípad predpočítame si hodnotu, že sme hodili len $t$ orlov a žiadne panny, čo je
+ súčin pravdepodobností $\prod\limits_{i=1}^{t} p_{i}$, ktorý si pri každom kroku vieme predpočítať z predchadzajúceho výsledku ako $(\prod\limits_{i=1}^{t -1} p_{i} )\cdot p_{t}$.
+ 
+2. prípad je zhodný s prvým len počítame koľko sme hodili panien namiesto orlov, teda berieme pravdepodobnosť že nám pri $i$-tom pokuse padne panna ako $(1 - p_{i})$
+
+3. prípad vychádza zo znalosti, že vieme pravdepodobnosť s akou padne $t$ orlov a $h - 1$ panien, a $t - 1$ orlov a $h$ panien, kde z počiatočnej rekurzívnej rovnice vieme, že $M[h][t] = M[h-1][t] \cdot (1 - p_{t}) + M[h][t-1] \cdot p_{t}$.\\
+
+\begin{algorithm}[H]
+	\caption{\textsc{Probability}($n, k, P$)}
+
+	\Input{$n$ je počet mincí, $k$ počet chcených orlov, $P$ pole pravděpodobností, kde $P[i]$ vyjadruje, že na $i$-tej minci padne orol}
+	\Output{pravdepodobnost, že padne $k$ orlů na $n$ minciach}
+	
+	\BlankLine
+	$M[0][0] \leftarrow 1$	\tcp{pravdepodobnosť, že na 0 hodov padne 0 orlov}
+
+	\For{$h \leftarrow 0$ \KwTo $n - k$}{
+		\For{$t \leftarrow 0$ \KwTo $k$}{
+			\uIf{$t \neq 0 \wedge h = 0$}{
+				$M[h][t] \leftarrow M[h][t - 1] \cdot P[t]$	\tcp{prípad 1}
+			}\uElseIf{$h \neq 0 \wedge t = 0$}{
+				$M[h][t] \leftarrow M[h - 1][t] \cdot (1 - P[h + 1])$ \tcp{prípad 2}
+			}\uElse{
+				$M[h][t] \leftarrow M[h - 1][t] \cdot (1 - P[t + 1]) + M[h][t - 1] \cdot P[t]$	\tcp{prípad 3}
+			}
+		}
+	}
+
+	\Return{$M[n-k][k]$}
+
+\end{algorithm}
+
+\paragraph{Časová složitost}
+Algoritmus počas svojho výpočtu vypĺňa maticu veľkosti $(n-k+1) \times k + 1$, kde v najhoršom prípade $k = n/2$ a teda musíme spočítať $n/2 \cdot n/2$ hodnôt $\in \mathcal{O}(n^{2})$. Keďže operácie v cykloch dokážeme robiť v konštantnom čase, celková časová zložitosť je $\mathcal{O}(n^{2})$.
+
+\paragraph{Konečnosť}V cykloch algoritmu rastú indexy vždy o 1, vzhľadom k tomu, že indexy v tele cyklu nemeníme z vlastností for-cyklu vieme, že algoritmus,vykoná v cykloch len $(n-k) \times k$ iterácií, teda aj skončí.
+
+\paragraph{Korektnosť} Aby bol algoritmus korektný musí byť konečný a parciálne korektný. Konečnosť sme si už potvrdili pre parciálnu korektnosť dokážeme, že vo výslednom bode matice bude súčet všetkých možných hodov $k$ orlov. Pre potreby dôkazu si môžeme maticu $M$ predstaviť ako orientovaný graf(smer je od menších indexov matice k väčším), kde jednotlivé hodnoty matice predstavujú uzly, ktoré su spojené len so susednými hodnotami v horizontále a vertikále. Každý tento prechod teda definuje hod jednou mincou(vertikálny prechod - padla panna a horizontálny prechod - padol orol). My chceme ukázať, že všetky cesty dĺžky $n$ vychádzajúce z bodu $[0][0]$ do bodu $[n-k][k]$ tvoria všetky možné permutácie hodov $n-k$ panien a $k$ orlov. Z vzdialenosti v tomto grafe vieme, že najkratšia cesta medzi bodom $[0][0]$ a bodom $[n-k][k]$ je práve $n$. Teda nedokážeme túto cestu prejsť ináč ako na $[n-k]$ prechodov kde hodíme pannu a $k$ prechodov kde hodíme orla. V každom uzle sa rozhodujeme či pôjdeme po prechode orla alebo panny, keďže týchto rozhodnutí je $n$neexistuje postúpnosť orlov a panien pre ktorú by neexistovala postúpnosť rozhodnutí v tomto grafe a obsahovala by $k$ orlov a $n-k$ panien. Z algoritmu vidíme, že všetky tieto cesty sa postupne sčítajú, teda je parcíalne korektný a aj korektný.
+
+\end{document}
+
